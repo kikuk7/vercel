@@ -4,7 +4,7 @@ const { Pool } = require('pg');
 const cors = require('cors'); // Mengizinkan permintaan dari domain Nuxt.js Anda
 
 const app = express();
-const port = 3001; // Port untuk backend API
+const port = process.env.PORT || 3001; // Gunakan port dari env, fallback ke 3001
 
 // Konfigurasi koneksi database PostgreSQL
 const pool = new Pool({
