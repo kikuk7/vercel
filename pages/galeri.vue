@@ -6,16 +6,16 @@
         Dokumentasi visual dari setiap proses dan hasil karya kami mencerminkan komitmen terhadap kualitas dan ketelitian. Melalui galeri ini, Anda dapat melihat bagaimana kami bekerja dengan penuh dedikasi dan tim yang berpengalaman untuk menghasilkan solusi terbaik bagi kebutuhan industri Anda.
       </p>
       <div class="parent">
-        <div class="div7"><img src="/static/assets/Foto Galeri/DSCF5415 (1).JPG" alt="Galeri 1"></div>
+        <div class="div7"><img src="/static/assets/Foto Galeri/DSCF5415.JPG" alt="Galeri 1"></div>
         <div class="div8"><img src="/static/assets/Foto Galeri/5.jpg" alt="Galeri 2"></div>
-        <div class="div9"><img src="/static/assets/Foto Galeri/DSCF5362 (2).JPG" alt="Galeri 3"></div>
+        <div class="div9"><img src="/static/assets/Foto Galeri/DSCF5362.JPG" alt="Galeri 3"></div>
         <div class="div10"><img src="/static/assets/DSCF5374.JPG" alt="Galeri 4"></div>
-        <div class="div11"><img src="/static/assets/Foto Galeri/DSCF5418 (1).JPG" alt="Galeri 5"></div>
-        <div class="div12"><img src="/static/assets/DSCF5359 (1).JPG" alt="Galeri 6"></div>
-        <div class="div13"><img src="/static/assets/DSCF5365 (2) (1).jpg" alt="Galeri 7"></div>
-        <div class="div14"><img src="/static/assets/DSCF5361 (1).JPG" alt="Galeri 8"></div>
-        <div class="div15"><img src="/static/assets/Foto Galeri/DSCF5421 (1).JPG" alt="Galeri 9"></div>
-        <div class="div16"><img src="/static/assets/DSCF5360 (1).JPG" alt="Galeri 10"></div>
+        <div class="div11"><img src="/static/assets/Foto Galeri/DSCF5418.JPG" alt="Galeri 5"></div>
+        <div class="div12"><img src="/static/assets/DSCF5359.JPG" alt="Galeri 6"></div>
+        <div class="div13"><img src="/static/assets/DSCF5365.jpg" alt="Galeri 7"></div>
+        <div class="div14"><img src="/static/assets/DSCF5361.JPG" alt="Galeri 8"></div>
+        <div class="div15"><img src="/static/assets/Foto Galeri/DSCF5421.JPG" alt="Galeri 9"></div>
+        <div class="div16"><img src="/static/assets/DSCF5360.JPG" alt="Galeri 10"></div>
         <div class="div17"><img src="/static/assets/DSCF5385.JPG" alt="Galeri 11"></div>
         <div class="div18"><img src="/static/assets/tentang.JPG" alt="Galeri 12"></div>
       </div>
