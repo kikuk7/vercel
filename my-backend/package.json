@@ -1,5 +1,5 @@
 {
-  "name": "cv-sumber-alam-raya-backend",
+  "name": "my-backend",
   "version": "1.0.0",
   "description": "Backend API for CV Sumber Alam Raya website",
   "main": "server.js",
