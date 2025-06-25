@@ -9,7 +9,7 @@
         <div class="div7"><img src="/assets/Foto Galeri/DSCF5415.JPG" alt="Galeri 1"></div>
         <div class="div8"><img src="/assets/Foto Galeri/5.jpg" alt="Galeri 2"></div>
         <div class="div9"><img src="/assets/Foto Galeri/DSCF5362.JPG" alt="Galeri 3"></div>
-        <div class="div10"><img src="/DSCF5374.JPG" alt="Galeri 4"></div>
+        <div class="div10"><img src="/assets/DSCF5374.JPG" alt="Galeri 4"></div>
         <div class="div11"><img src="/assets/Foto Galeri/DSCF5418.JPG" alt="Galeri 5"></div>
         <div class="div12"><img src="/assets/DSCF5359.JPG" alt="Galeri 6"></div>
         <div class="div13"><img src="/assets/DSCF5365.jpg" alt="Galeri 7"></div>
