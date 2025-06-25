@@ -229,8 +229,15 @@ const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
 
+// --- PENTING: Sesuaikan dengan URL API backend Node.js/Express Anda ---
+// Jika backend berjalan di localhost:3001, gunakan ini:
+const API_BASE_URL = 'http://localhost:3001/api'; 
+// Jika sudah di-deploy, ganti dengan URL deployment backend Anda:
+// const API_BASE_URL = 'https://your-backend-api.com/api'; 
+// --- AKHIR PENTING ---
+
 onMounted(async () => {
-  const pageId = route.params.id; // Ini akan menjadi ID atau SLUG tergantung rute yang diakses
+  const pageId = route.params.id; 
   if (pageId) {
     await fetchPage(pageId);
   } else {
@@ -240,12 +247,12 @@ onMounted(async () => {
 
 async function fetchPage(idOrSlug) {
   try {
-    const response = await fetch(`/api/pages/${idOrSlug}`);
+    const response = await fetch(`${API_BASE_URL}/pages/${idOrSlug}`); 
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Gagal mengambil data halaman.');
     }
-    page.value = await response.json();
+    page.value = await response.json(); 
   } catch (e) {
     errorMessage.value = e.message;
     console.error('Error fetching page:', e);
@@ -258,7 +265,7 @@ async function updatePage() {
   validationErrors.value = {};
 
   try {
-    const response = await fetch(`/api/pages/${page.value.id}`, { // Selalu gunakan ID untuk UPDATE API
+    const response = await fetch(`${API_BASE_URL}/pages/${page.value.id}`, { 
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -268,15 +275,17 @@ async function updatePage() {
 
     if (!response.ok) {
       const errorData = await response.json();
-      if (response.status === 422 && errorData.errors) { // Handle validation errors
+      if (response.status === 422 && errorData.errors) { 
         validationErrors.value = errorData.errors;
-        errorMessage.value = "Ada kesalahan validasi. Silakan periksa formulir Anda.";
+        errorMessage.value = errorData.message || "Ada kesalahan validasi. Silakan periksa formulir Anda.";
       } else {
         throw new Error(errorData.message || 'Gagal menyimpan perubahan halaman.');
       }
     } else {
       successMessage.value = 'Halaman berhasil diperbarui!';
-      router.push({ path: '/admin/pages', query: { success: 'Halaman berhasil diperbarui!' } });
+      setTimeout(() => {
+        router.push({ path: '/admin/pages', query: { success: 'Halaman berhasil diperbarui!' } });
+      }, 1000); 
     }
   } catch (e) {
     errorMessage.value = e.message;
@@ -307,11 +316,11 @@ async function updatePage() {
 .btn-success { background-color: #198754; border-color: #198754; color: white; }
 .btn-secondary { background-color: #6c757d; border-color: #6c757d; color: white; }
 hr {
-    margin: 1rem 0;
-    color: inherit;
-    background-color: currentColor;
-    border: 0;
-    opacity: .25;
-    height: 1px;
+margin: 1rem 0;
+color: inherit;
+background-color: currentColor;
+border: 0;
+opacity: .25;
+height: 1px;
 }
 </style>

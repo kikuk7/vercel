@@ -1,8 +1,10 @@
 <template>
   <main>
     <section class="faq-section">
-      <h2>Frequently Ask Question</h2>
+      <!-- Menggunakan faq_main_title dari database -->
+      <h2>{{ page.faq_main_title }}</h2>
 
+      <!-- Menggunakan faqItems yang dibangun dari data database -->
       <div class="faq-item" v-for="(item, index) in faqItems" :key="index">
         <div class="faq-question" @click="toggleAnswer(index)" :class="{ 'active': activeIndex === index }">
           {{ item.question }}
@@ -18,47 +20,64 @@
 <script>
 import visitorStats from '~/mixins/visitorStats'; // Import the mixin
 
+const API_BASE_URL = 'http://localhost:3001/api'; 
+
 export default {
   name: 'FaqPage',
   mixins: [visitorStats], // Use the mixin for visitor stats
   data() {
     return {
       activeIndex: null,
-      faqItems: [
-        {
-          question: "Produk apa saja yang diproduksi oleh CV Sumber Alam Raya?",
-          answer: "Kami memproduksi beragam produk berbahan dasar besi seperti tangki oli hidrolik, ornamen pagar, aksesoris knalpot, pipa hollow, dan komponen kendaraan lainnya."
-        },
-        {
-          question: "Apakah bisa pesan produk custom sesuai kebutuhan?",
-          answer: "Ya, kami menerima pemesanan produk sesuai desain atau spesifikasi dari pelanggan."
-        },
-        {
-          question: "Bagaimana cara melakukan pemesanan?",
-          answer: "Anda dapat menghubungi kami melalui WhatsApp pada website ini. Tim kami akan membantu Anda dalam proses pemesanan."
-        },
-        {
-          question: "Berapa lama waktu produksi dan pengiriman?",
-          answer: "Waktu produksi dan pengiriman bervariasi tergantung kompleksitas dan lokasi. Umumnya 3–7 hari kerja."
-        },
-        {
-          question: "Apakah bisa melakukan kerja sama jangka panjang?",
-          answer: "Tentu saja! Kami terbuka untuk kerja sama jangka panjang dengan perusahaan, instansi, atau mitra distribusi."
-        }
-      ]
+      // Properti 'page' untuk data utama dari DB
+      page: {
+        faq_main_title: 'Memuat FAQ...'
+      },
+      // faqItems akan dibangun setelah data API diambil
+      faqItems: [] 
     };
   },
   methods: {
     toggleAnswer(index) {
       this.activeIndex = this.activeIndex === index ? null : index;
+    },
+    async fetchPageData(slug) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/pages/${slug}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
+        }
+        const data = await response.json();
+        this.page = data; 
+
+        // Bangun array faqItems dari properti halaman yang flat
+        this.faqItems = [];
+        for (let i = 1; i <= 5; i++) { // Asumsi ada 5 item FAQ seperti di form admin
+          if (data[`faq_${i}_question`] && data[`faq_${i}_answer`]) {
+            this.faqItems.push({
+              question: data[`faq_${i}_question`],
+              answer: data[`faq_${i}_answer`]
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
+        // Fallback data
+        this.page.faq_main_title = 'FAQ Tidak Tersedia';
+        this.faqItems = [
+          { question: 'Error memuat pertanyaan.', answer: 'Silakan coba lagi nanti.' }
+        ];
+      }
     }
   },
   mounted() {
-    this.updateStats(); // Call updateStats when the component is mounted
-    this.intervalId = setInterval(this.updateStats, 30000); // Set up interval
+    // Panggil API untuk mendapatkan data halaman 'faq'
+    this.fetchPageData('faq');
+    this.updateStats(); 
+    this.intervalId = setInterval(this.updateStats, 30000); 
   },
   beforeDestroy() {
-    clearInterval(this.intervalId); // Clear interval when component is destroyed
+    clearInterval(this.intervalId); 
   }
 }
 </script>

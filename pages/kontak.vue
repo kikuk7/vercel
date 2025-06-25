@@ -3,35 +3,42 @@
     <section class="hero">
       <div class="container">
         <div class="hero-image-wrapper">
-          <img :src="heroImage" alt="Layanan Hero" />
-          <div class="overlay-text">{{ heroOverlayText }}</div>
+          <!-- PERBAIKAN: Menggunakan page.hero_image_url dari database -->
+          <img src="/static/assets/layanan2.jpg" alt="Layanan Hero" />
+          <!-- Menggunakan contact_overlay_text dari database -->
+          <div class="overlay-text">{{ page.contact_overlay_text }}</div>
         </div>
       </div>
     </section>
 
     <section class="kontak-kami">
-      <h2>Kontak Kami</h2>
+      <!-- Menggunakan contact_title dari database -->
+      <h2>{{ page.contact_title }}</h2>
       <div class="info-boxes">
         <div class="info-card">
           <div class="icon"><img src="/static/assets/icon/telp 2.png" alt="Ikon Telepon"></div>
+          <!-- Menggunakan contact_phone dari database -->
           <h3>Telepon</h3>
-          <p>{{ contactInfo.phone }}</p>
+          <p>{{ page.contact_phone }}</p>
         </div>
         <div class="info-card">
           <div class="icon"><img src="/static/assets/icon/home.png" alt="Ikon Lokasi"></div>
-          <h3>Kunjungi kami</h3>
-          <p>{{ contactInfo.address }}</p>
+          <!-- Menggunakan contact_location_title dan contact_location_body dari database -->
+          <h3>{{ page.contact_location_title }}</h3>
+          <p>{{ page.contact_location_body }}</p>
         </div>
         <div class="info-card">
           <div class="icon"><img src="/static/assets/icon/email 2.png" alt="Ikon Email"></div>
-          <h3>Email</h3>
-          <p>{{ contactInfo.email }}</p>
+          <!-- Menggunakan contact_email_title dan contact_email_address dari database -->
+          <h3>{{ page.contact_email_title }}</h3>
+          <p>{{ page.contact_email_address }}</p>
         </div>
       </div>
 
       <div class="atau">atau</div>
       <div class="wa-button">
-        <a :href="contactInfo.whatsappLink" class="btn-primary"><img src="/static/assets/icon/WA.png" alt="WhatsApp Icon" class="btn-icon-img"> WA Sekarang</a>
+        <!-- Menggunakan contact_whatsapp_number dari database untuk link WA -->
+        <a :href="`https://wa.me/${page.contact_whatsapp_number}`" class="btn-primary"><img src="/static/assets/icon/WA.png" alt="WhatsApp Icon" class="btn-icon-img"> WA Sekarang</a>
       </div>
     </section>
   </main>
@@ -40,43 +47,69 @@
 <script>
 import visitorStats from '~/mixins/visitorStats';
 
+const API_BASE_URL = 'http://localhost:3001/api'; 
+
 export default {
   name: 'KontakPage',
   mixins: [visitorStats],
   data() {
     return {
-      // Inisialisasi data default, ini akan ditimpa oleh data dari API
-      heroImage: '/static/assets/Foto Galeri/1.jpg',
-      heroOverlayText: 'Kepuasan Anda Tujuan Kami',
-      contactInfo: {
-        phone: '+62 895 0479 8167',
-        address: 'Desa Bengledukuh, Bengle, Kec. Talang, Kabupaten Tegal, Jawa Tengah 52193',
-        email: 'sumberalam423@gmail.com',
-        whatsappLink: 'https://wa.me/+6287801319313'
+      // Inisialisasi properti 'page' dengan nilai default/placeholder
+      // hero_image tidak lagi diperlukan sebagai properti terpisah
+      page: {
+        hero_image_url: '/static/assets/Foto Galeri/1.jpg', // Default jika database kosong
+        contact_overlay_text: 'Memuat...',
+        contact_title: 'Memuat...',
+        contact_phone: 'Memuat...',
+        contact_location_title: 'Memuat...',
+        contact_location_body: 'Memuat...',
+        contact_email_title: 'Memuat...',
+        contact_email_address: 'Memuat...',
+        contact_whatsapp_number: '' // Hanya nomor, link akan dibuat
       }
     };
   },
   async mounted() {
-    // Panggil API untuk mendapatkan data kontak
-    try {
-      const response = await fetch('/api/kontak'); // Ganti dengan endpoint API Anda
-      const data = await response.json();
-      if (data) {
-        this.heroImage = data.heroImage || this.heroImage;
-        this.heroOverlayText = data.heroOverlayText || this.heroOverlayText;
-        this.contactInfo = { ...this.contactInfo, ...data.contactInfo };
-      }
-    } catch (e) {
-      console.error('Gagal mengambil data kontak:', e);
-    }
+    // Panggil API untuk mendapatkan data halaman 'kontak'
+    await this.fetchPageData('kontak');
     this.updateStats();
     this.intervalId = setInterval(this.updateStats, 30000);
   },
   beforeDestroy() {
     clearInterval(this.intervalId);
+  },
+  methods: {
+    async fetchPageData(slug) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/pages/${slug}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
+        }
+        const data = await response.json();
+        this.page = data; // Pasangkan data dari API ke properti 'page'
+      } catch (error) {
+        console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
+        // Fallback data jika gagal mengambil dari API
+        this.page.contact_overlay_text = 'Gagal Memuat';
+        this.page.contact_title = 'Hubungi Kami (Offline)';
+        this.page.contact_phone = 'N/A';
+        this.page.contact_location_title = 'N/A';
+        this.page.contact_location_body = 'N/A';
+        this.page.contact_email_title = 'N/A';
+        this.page.contact_email_address = 'N/A';
+        this.page.contact_whatsapp_number = '';
+      }
+    }
   }
 }
 </script>
 <style>
 /* Add kontak.css content here */
+/* Tambahan untuk hero-image-fallback agar gambar hero tampil baik */
+.hero-image-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 </style>
