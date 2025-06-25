@@ -1,0 +1,184 @@
+.hero-kontak {
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9; /* Menjaga tampilan landscape */
+  overflow: hidden;
+  border-radius: 16px;
+  margin-top: 40px;
+}
+
+.hero-kontak img,
+.hero-kontak video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+.overlay-text {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 4px black;
+  text-align: center;
+}
+
+.kontak-kami {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.kontak-kami h2 {
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.info-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.info-card {
+  background-color: #f9f9f9;
+  padding: 24px;
+  border-radius: 12px;
+  width: 250px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  display: block;
+  
+  justify-items: center;
+}
+
+
+.info-card .icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  
+}
+
+.atau {
+  margin: 10px 0;
+  font-style: italic;
+}
+
+.wa-button {
+  margin-bottom: 40px;
+}
+
+.btn-wa {
+  background-color: #25d366;
+  color: white;
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.map {
+  padding: 0 20px 40px;
+}
+
+@media (max-width: 768px) {
+  /* --- Hero Kontak - Mobile --- */
+  .hero-kontak {
+    aspect-ratio: 4/3; /* Mungkin lebih baik di mobile, lebih tinggi */
+    border-radius: 8px; /* Kurangi border-radius */
+    margin-top: 20px; /* Kurangi margin */
+  }
+
+  .overlay-text {
+    bottom: 20px; /* Sesuaikan posisi teks overlay */
+    font-size: 1.5rem; /* Ukuran font lebih kecil */
+  }
+
+  /* --- Kontak Kami Section - Mobile --- */
+  .kontak-kami {
+    padding: 20px 10px; /* Kurangi padding utama section */
+  }
+
+  .kontak-kami h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem; /* Ukuran font judul lebih kecil */
+  }
+
+  .info-boxes {
+    flex-wrap: nowrap; /* PENTING: Mencegah card melipat ke baris baru */
+    justify-content: center; /* Pusatkan kartu */
+    gap: 15px; /* Kurangi jarak antar kartu */
+    overflow-x: auto; /* PENTING: Mengizinkan scroll horizontal jika tidak muat */
+    -webkit-overflow-scrolling: touch; /* Untuk scroll yang lebih mulus di iOS */
+    padding-bottom: 10px; /* Tambahkan sedikit padding bawah jika ada scrollbar */
+  }
+
+  .info-card {
+    flex-shrink: 0; /* Penting: Jangan biarkan kartu menyusut di bawah min-width */
+    flex-basis: auto; /* Biarkan flex-basis menyesuaikan konten atau min-width */
+    width: 100px; /* Atur lebar tetap yang lebih kecil untuk setiap kartu */
+    padding: 10px; /* Kurangi padding di dalam kartu */
+    border-radius: 8px; /* Kurangi border-radius */
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08); /* Kurangi bayangan */
+    text-align: center; /* Pastikan teks di tengah */
+  }
+
+  .info-card .icon {
+    font-size: 1.5rem; /* Ukuran ikon lebih kecil */
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+  }
+  .info-card h3 {
+      font-size: 0.8rem; /* Ukuran judul kartu lebih kecil */
+      margin-bottom: 3px;
+      white-space: nowrap; /* Jangan biarkan judul pecah baris */
+  }
+  .info-card p {
+      font-size: 0.4rem; /* Ukuran teks lebih kecil */
+      white-space: normal; /* Izinkan teks pecah baris jika terlalu panjang */
+  }
+
+  .atau {
+    margin: 8px 0;
+    font-size: 0.9rem;
+    margin-top: -20px;
+  }
+
+  .wa-button {
+    margin-bottom: 20px;
+    margin-top: -10px;
+  }
+
+  .btn-wa {
+    padding: 10px 18px; /* Ukuran tombol lebih kecil */
+    font-size: 0.9rem;
+    border-radius: 6px;
+    white-space: nowrap; /* Jangan biarkan teks tombol pecah */
+  }
+
+  /* --- Map Section - Mobile --- */
+  .map {
+    padding: 0 10px 20px; /* Kurangi padding peta */
+  }
+  .map img {
+    height: 150px; /* Tinggi peta lebih kecil */
+    border-radius: 8px;
+  }
+  /* Jika menggunakan iframe Google Maps */
+  .map iframe {
+      height: 150px;
+      border-radius: 8px;
+  }
+}

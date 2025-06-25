@@ -1,0 +1,281 @@
+/* --- Bagian Produk Detail (produk.html) --- */
+.product-section {
+    padding-top: 80px; /* Sesuaikan dengan tinggi header fixed Anda */
+    padding-bottom: 60px;
+    background-color: #ffffff;
+}
+
+.product-content {
+    display: flex;
+    flex-direction: column; /* Desktop & Mobile: Selalu menumpuk secara vertikal */
+    gap: 20px; /* Jarak antar bagian */
+    max-width: 800px; /* Lebar maksimal konten utama, sesuaikan */
+    margin: 0 auto; /* Pusatkan seluruh blok konten */
+    padding: 0 15px; /* Padding samping container */
+    align-items: center; /* Pusatkan semua item flexbox horizontal */
+    text-align: center; /* Pusatkan teks default */
+    background-color: #ffffff;
+}
+
+/* --- Elemen di dalam .product-content, atur order untuk tampilan ini --- */
+
+#product-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #333;
+    font-family: "Montserrat", sans-serif;
+    width: 100%;
+    order: 1; /* Judul produk paling atas */
+}
+
+.product-model {
+    /* Main Product Model (sekarang di bawah judul) */
+    width: 100%; /* Ambil lebar penuh container product-content */
+    position: relative;
+    display: flex; /* Untuk positioning tombol panah */
+    align-items: center;
+    justify-content: center;
+    order: 2; /* Model 3D di bawah judul */
+    margin-bottom: 0; /* Hapus margin bawah jika sudah diatur di gap product-content */
+    
+}
+
+model-viewer {
+    width: 100%;
+    height: 450px; /* Tinggi model yang responsif */
+    background-color: #eee;
+    border-radius: 12px; /* Sudut melengkung pada model-viewer */
+    display: block;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Tambahkan bayangan jika diinginkan */
+}
+
+.arrow-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    color: #005fcc;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 2.5rem;
+    z-index: 10;
+    
+}
+
+.arrow-btn.left {
+    left: 5px;
+}
+
+.arrow-btn.right {
+    right: 5px;
+}
+
+.product-info {
+    /* Container untuk deskripsi, spesifikasi, thumbnails, dan tombol */
+    width: 100%; /* Mengambil lebar penuh container product-content */
+    display: flex;
+    flex-direction: column; /* Konten di dalamnya menumpuk vertikal */
+    align-items: flex-start; /* Elemen rata kiri */
+    text-align: left; /* Teks default rata kiri */
+    padding: 0; /* Hapus padding agar tidak tumpang tindih dengan padding section */
+    order: 3; /* Product Info muncul di bawah model 3D */
+    gap: 20px; /* Jarak antara elemen di dalam product-info */
+}
+
+#product-main-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 0; /* Direset karena gap pada product-info */
+    text-align: justify; /* Rata kiri-kanan untuk deskripsi utama */
+    padding: 0 5px; /* Sedikit padding samping untuk teks utama */
+    width: 100%; /* Ambil lebar penuh */
+}
+
+.product-spec-list {
+    margin-top: 0; /* Direset karena gap pada product-info */
+    margin-bottom: 0; /* Direset karena gap pada product-info */
+    text-align: left;
+    width: 100%; /* Mengambil lebar penuh */
+}
+
+.product-spec-list h4 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: left; /* Judul spesifikasi rata kiri */
+}
+
+.product-spec-list ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 0;
+    width: 100%; /* Ambil lebar penuh */
+}
+
+.product-spec-list ul li {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+/* Container untuk tombol dan thumbnail agar bisa sejajar */
+.product-actions-and-thumbs {
+    display: flex;
+    flex-direction: row; /* Berjejer horizontal */
+    justify-content: flex-end; /* Rata kanan */
+    align-items: center; /* Pusatkan vertikal */
+    gap: 15px; /* Jarak antara thumbnail dan tombol */
+    width: 100%; /* Ambil lebar penuh product-info */
+    margin-top: -130px; /* Geser sedikit ke atas agar lebih dekat dengan deskripsi */
+}
+
+.product-thumbnails {
+    display: flex;
+    gap: 10px;
+    order: 1; /* Thumbnail muncul di kiri dalam container ini */
+    justify-content: flex-end; /* Rata kanan di dalam container-nya */
+    flex-wrap: nowrap; /* Jangan biarkan thumbnail melipat di desktop */
+    width: fit-content; /* Biarkan lebarnya sesuai konten */
+}
+
+.product-thumbnails img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.product-thumbnails img:hover {
+    transform: scale(1.05);
+}
+
+.btn-wa {
+    display: inline-block;
+    background-color: #25d366;
+    color: white;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    margin-bottom: 0; /* Direset karena gap pada product-actions-and-thumbs */
+    white-space: nowrap;
+    order: 2; /* Tombol muncul di kanan dalam container ini */
+}
+
+.btn-wa:hover {
+    background-color: #128c7e;
+}
+
+
+/* --- Responsive CSS untuk Mobile (di bawah 768px) --- */
+@media (max-width: 768px) {
+    .product-section {
+        padding-top: 20px;
+        padding-bottom: 30px;
+        margin-top: -100px;
+    }
+
+    .product-content {
+        gap: 15px; /* Kurangi jarak antar bagian di mobile */
+        padding: 0 10px; /* Sesuaikan padding di mobile */
+        
+    }
+
+    #product-title {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        margin-top: 115px;
+    }
+
+    .product-model {
+        order: 2; /* Model 3D tetap di bawah judul */
+        margin-bottom: 0;
+    }
+
+    model-viewer {
+        height: 300px; /* Tinggi model 3D lebih kecil di mobile */
+        border-radius: 8px;
+    }
+
+    .arrow-btn {
+        padding: 8px;
+        font-size: 1.2rem;
+    }
+    /* Posisi panah tetap */
+
+    .product-info {
+        order: 3; /* Product Info di bawah model 3D */
+        text-align: center; /* Default teks rata tengah di mobile */
+        gap: 15px; /* Kurangi gap antara elemen di product-info */
+    }
+
+    #product-main-description {
+        font-size: 0.85rem;
+        margin-bottom: 0; /* Direset karena gap product-info */
+        padding: 0;
+        text-align: justify; /* Deskripsi tetap justify di mobile */
+        margin-top: 20px;
+    }
+
+    .product-spec-list {
+        margin-top: 0; /* Direset karena gap product-info */
+        margin-bottom: 0; /* Direset karena gap product-info */
+    }
+
+    .product-spec-list h4 {
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        text-align: center; /* Judul spesifikasi rata tengah di mobile */
+    }
+
+    .product-spec-list ul {
+        padding-left: 20px;
+        width: 100%;
+        text-align: left;
+    }
+
+    .product-spec-list ul li {
+        font-size: 0.8rem;
+        margin-bottom: 3px;
+    }
+
+    .product-actions-and-thumbs {
+        flex-direction: column; /* Di mobile, tombol dan thumbnail menumpuk */
+        justify-content: center; /* Pusatkan horizontal */
+        align-items: center; /* Pusatkan horizontal */
+        gap: 10px; /* Kurangi jarak */
+        margin-top: 0; /* Direset */
+    }
+
+    .product-thumbnails {
+        order: 1; /* Thumbnail di atas tombol */
+        gap: 8px;
+        justify-content: center; /* Pusatkan thumbnail */
+        width: 100%;
+    }
+
+    .product-thumbnails img {
+        width: 60px;
+        height: 60px;
+        border-radius: 6px;
+    }
+
+    .btn-wa {
+        order: 2; /* Tombol di bawah thumbnail */
+        width: 90%; /* Tombol lebih lebar */
+        padding: 10px 15px;
+        font-size: 0.95rem;
+        margin-bottom: 0; /* Direset */
+    }
+}
