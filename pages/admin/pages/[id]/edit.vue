@@ -121,6 +121,12 @@
               <textarea class="form-control" id="gallery_intro_body" v-model="page.gallery_intro_body" rows="5"></textarea>
               <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
             </div>
+            <!-- Form untuk images - hanya jika Anda ingin mengedit array JSONB di form -->
+            <div class="mb-3">
+                <label for="images" class="form-label">URL Gambar Galeri (JSON Array)</label>
+                <textarea class="form-control" id="images" v-model="page.images" rows="5" placeholder='["/path/to/img1.jpg", "/path/to/img2.jpg"]'></textarea>
+                <small class="form-text text-muted">Masukkan URL gambar sebagai JSON array. Contoh: ["/assets/galeri/img1.jpg", "/assets/galeri/img2.jpg"]</small>
+            </div>
             </div>
 
           <hr>
@@ -215,6 +221,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useRuntimeConfig } from '#app'; // Import useRuntimeConfig
 
 definePageMeta({
   layout: 'admin',
@@ -229,12 +236,9 @@ const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
 
-// --- PENTING: Sesuaikan dengan URL API backend Node.js/Express Anda ---
-// Jika backend berjalan di localhost:3001, gunakan ini:
-const API_BASE_URL = 'http://localhost:3001/api'; 
-// Jika sudah di-deploy, ganti dengan URL deployment backend Anda:
-// const API_BASE_URL = 'https://your-backend-api.com/api'; 
-// --- AKHIR PENTING ---
+const config = useRuntimeConfig(); // Ambil runtime config
+const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+
 
 onMounted(async () => {
   const pageId = route.params.id; 

@@ -3,15 +3,12 @@
     <section class="hero">
       <div class="container">
         <div class="hero-image-wrapper">
-          <!-- Pastikan v-if dan :src menggunakan page.hero_video_url -->
           <video autoplay muted loop v-if="page.hero_video_url">
             <source src="/static/assets/beranda.mp4" type="video/mp4" />
             Browser Anda tidak mendukung video.
           </video>
-          <!-- Pastikan v-else-if dan :src menggunakan page.hero_image_url -->
           <img :src="page.hero_image_url" :alt="page.hero_title" v-else-if="page.hero_image_url" class="hero-image-fallback" />
           <div class="hero-text">
-            <!-- Pastikan ini menggunakan page.hero_title -->
             <h1>{{ page.hero_title }}</h1>
             <NuxtLink to="/produk" class="btn-primary">lihat produk kami</NuxtLink>
           </div>
@@ -23,27 +20,19 @@
       <div class="about-section">
         <div class="card">
           <h2>Tentang Kami</h2>
-          <p>
-            <!-- Pastikan ini menggunakan page.homepage_about_section_text -->
-            {{ page.homepage_about_section_text }}
-          </p>
+          <p>{{ page.homepage_about_section_text }}</p>
           <NuxtLink to="/tentang" class="btn-outline">selengkapnya</NuxtLink>
         </div>
 
         <div class="card" style="margin-top: 50px;">
           <h2>Layanan Kami</h2>
-          <p>
-            <!-- Pastikan ini menggunakan page.homepage_services_section_text -->
-            {{ page.homepage_services_section_text }}
-          </p>
+          <p>{{ page.homepage_services_section_text }}</p>
           <NuxtLink to="/layanan" class="btn-outline">selengkapnya</NuxtLink>
         </div>
       </div>
 
       <div class="bottom-section">
         <div class="image-content">
-          <!-- Gambar ini masih hardcoded. Untuk membuatnya dinamis, 
-               Anda perlu menambahkan URL gambar ini ke database dan mengambilnya dari API. -->
           <img src="/static/assets/layanan2.jpg" alt="layanan2" class="img-small" />
           <img src="/static/assets/layanan1.jpg" alt="layanan1" class="img-large" />
           <img src="/static/assets/layanan3.jpg" alt="layanan3" class="img-small" />
@@ -54,14 +43,12 @@
 </template>
 
 <script>
-import visitorStats from '~/mixins/visitorStats'; // Import the mixin
-
-// PENTING: Sesuaikan dengan URL API backend Node.js/Express Anda
-const API_BASE_URL = 'http://localhost:3001/api'; 
+import visitorStats from '~/mixins/visitorStats';
+import { useRuntimeConfig } from '#app'; // Penting: Impor useRuntimeConfig
 
 export default {
   name: 'IndexPage',
-  mixins: [visitorStats], // Use the mixin for visitor stats
+  mixins: [visitorStats],
   data() {
     return {
       // Inisialisasi properti 'page' dengan nilai default kosong atau placeholder
@@ -76,8 +63,12 @@ export default {
     };
   },
   async mounted() {
+    // Ambil runtime config di sini, di dalam mounted hook
+    const config = useRuntimeConfig();
+    const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+
     // Panggil fungsi untuk mengambil data halaman 'beranda' dari API
-    await this.fetchPageData('beranda'); 
+    await this.fetchPageData('beranda', API_BASE_URL); // Teruskan API_BASE_URL sebagai argumen
     
     // Panggil updateStats dari mixin
     this.updateStats(); 
@@ -89,9 +80,10 @@ export default {
     clearInterval(this.intervalId); 
   },
   methods: {
-    async fetchPageData(slug) {
+    // Terima apiBaseUrl sebagai argumen
+    async fetchPageData(slug, apiBaseUrl) { 
       try {
-        const response = await fetch(`${API_BASE_URL}/pages/${slug}`);
+        const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
         if (!response.ok) {
           // Tangani error jika respons tidak OK (misalnya 404, 500)
           const errorData = await response.json();
@@ -114,7 +106,7 @@ export default {
 </script>
 
 <style>
-/* Page-specific styles if any */
+/* Gaya spesifik halaman jika ada */
 .hero-image-fallback {
   width: 100%;
   height: 100%;

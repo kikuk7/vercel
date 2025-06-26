@@ -53,9 +53,7 @@
 
 <script>
 import visitorStats from '~/mixins/visitorStats'; // Import the mixin
-
-// PENTING: Sesuaikan dengan URL API backend Node.js/Express Anda
-const API_BASE_URL = 'http://localhost:3001/api'; 
+import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
 export default {
   name: 'TentangPage',
@@ -79,8 +77,11 @@ export default {
     };
   },
   async mounted() {
+    const config = useRuntimeConfig(); // Ambil runtime config
+    const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+
     // Panggil fungsi untuk mengambil data halaman 'tentang' dari API
-    await this.fetchPageData('tentang'); 
+    await this.fetchPageData('tentang', API_BASE_URL); 
     
     // Panggil updateStats dari mixin
     this.updateStats(); 
@@ -92,9 +93,9 @@ export default {
     clearInterval(this.intervalId); 
   },
   methods: {
-    async fetchPageData(slug) {
+    async fetchPageData(slug, apiBaseUrl) { // Terima apiBaseUrl sebagai argumen
       try {
-        const response = await fetch(`${API_BASE_URL}/pages/${slug}`);
+        const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
         if (!response.ok) {
           // Tangani error jika respons tidak OK (misalnya 404, 500)
           const errorData = await response.json();

@@ -19,8 +19,7 @@
 
 <script>
 import visitorStats from '~/mixins/visitorStats'; // Import the mixin
-
-const API_BASE_URL = 'http://localhost:3001/api'; 
+import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
 export default {
   name: 'FaqPage',
@@ -40,9 +39,9 @@ export default {
     toggleAnswer(index) {
       this.activeIndex = this.activeIndex === index ? null : index;
     },
-    async fetchPageData(slug) {
+    async fetchPageData(slug, apiBaseUrl) { // Terima apiBaseUrl sebagai argumen
       try {
-        const response = await fetch(`${API_BASE_URL}/pages/${slug}`);
+        const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
@@ -70,9 +69,12 @@ export default {
       }
     }
   },
-  mounted() {
+  async mounted() { // Ubah mounted menjadi async
+    const config = useRuntimeConfig(); // Ambil runtime config
+    const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+
     // Panggil API untuk mendapatkan data halaman 'faq'
-    this.fetchPageData('faq');
+    await this.fetchPageData('faq', API_BASE_URL);
     this.updateStats(); 
     this.intervalId = setInterval(this.updateStats, 30000); 
   },

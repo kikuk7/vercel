@@ -3,7 +3,7 @@
     <section class="hero">
       <div class="container">
         <div class="hero-image-wrapper">
-          <!-- PERBAIKAN: Menggunakan page.hero_image_url dari database -->
+          <!-- Menggunakan page.hero_image_url dari database -->
           <img src="/static/assets/layanan2.jpg" alt="Layanan Hero" />
           <!-- Menggunakan contact_overlay_text dari database -->
           <div class="overlay-text">{{ page.contact_overlay_text }}</div>
@@ -46,8 +46,7 @@
 
 <script>
 import visitorStats from '~/mixins/visitorStats';
-
-const API_BASE_URL = 'http://localhost:3001/api'; 
+import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
 export default {
   name: 'KontakPage',
@@ -55,7 +54,6 @@ export default {
   data() {
     return {
       // Inisialisasi properti 'page' dengan nilai default/placeholder
-      // hero_image tidak lagi diperlukan sebagai properti terpisah
       page: {
         hero_image_url: '/static/assets/Foto Galeri/1.jpg', // Default jika database kosong
         contact_overlay_text: 'Memuat...',
@@ -69,9 +67,12 @@ export default {
       }
     };
   },
-  async mounted() {
+  async mounted() { // Ubah mounted menjadi async
+    const config = useRuntimeConfig(); // Ambil runtime config
+    const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+
     // Panggil API untuk mendapatkan data halaman 'kontak'
-    await this.fetchPageData('kontak');
+    await this.fetchPageData('kontak', API_BASE_URL);
     this.updateStats();
     this.intervalId = setInterval(this.updateStats, 30000);
   },
@@ -79,9 +80,9 @@ export default {
     clearInterval(this.intervalId);
   },
   methods: {
-    async fetchPageData(slug) {
+    async fetchPageData(slug, apiBaseUrl) { // Terima apiBaseUrl sebagai argumen
       try {
-        const response = await fetch(`${API_BASE_URL}/pages/${slug}`);
+        const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);

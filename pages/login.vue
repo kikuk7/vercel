@@ -13,6 +13,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
 definePageMeta({
   layout: 'guest', // Menggunakan layout guest tanpa header/footer
@@ -23,6 +24,10 @@ const username = ref('');
 const password = ref('');
 const error = ref(null);
 const router = useRouter();
+
+// Ambil runtime config, meskipun belum digunakan untuk login hardcode
+const config = useRuntimeConfig();
+const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
 
 async function login() {
   error.value = null;
