@@ -137,8 +137,7 @@ async function saveGallery() {
       }
     } else {
       successMessage.value = 'Galeri berhasil diperbarui!';
-      // Opsional: Muat ulang data galeri setelah sukses menyimpan (untuk konfirmasi visual)
-      await fetchGalleryPageData();
+      await fetchGalleryPageData(); // Muat ulang data galeri setelah sukses menyimpan
       setTimeout(() => successMessage.value = null, 3000); 
     }
   } catch (e) {
@@ -171,7 +170,7 @@ async function uploadGalleryImage() {
   formData.append('image', file); 
 
   try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+    const response = await fetch(`${API_BASE_URL}/upload-image`, { // Endpoint upload baru
       method: 'POST',
       body: formData 
     });
@@ -237,90 +236,103 @@ function moveImageDown(index) {
 onMounted(fetchGalleryPageData); // Muat data galeri saat komponen dimuat
 </script>
 
-<style scoped>
-/* Gaya Bootstrap-like */
-.py-3 { padding-top: 1rem; padding-bottom: 1rem; }
-.mb-3 { margin-bottom: 1rem; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
-.ms-2 { margin-left: 0.5rem; }
-.alert { padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 0.25rem; }
-.alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
-.alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }
-.card { position: relative; display: flex; flex-direction: column; min-width: 0; word-wrap: break-word; background-color: #fff; background-clip: border-box; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
-.card-header { padding: 0.75rem 1.25rem; margin-bottom: 0; background-color: rgba(0,0,0,.03); border-bottom: 1px solid rgba(0,0,0,.125); }
-.card-body { flex: 1 1 auto; padding: 1rem 1rem; }
-.bg-dark { background-color: #212529 !important; }
-.text-white { color: #fff !important; }
-.form-label { margin-bottom: 0.5rem; }
-.form-control { display: block; width: 100%; padding: 0.375rem 0.75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; appearance: none; border-radius: 0.25rem; transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out; }
-.form-control:focus { border-color: #86b7fe; outline: 0; box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); }
-.form-text { margin-top: 0.25rem; font-size: 0.875em; color: #6c757d; }
-.btn-success { background-color: #198754; border-color: #198754; color: white; }
-.btn-secondary { background-color: #6c757d; border-color: #6c757d; color: white; }
-hr {
-    margin: 1rem 0;
-    color: inherit;
-    background-color: currentColor;
-    border: 0;
-    opacity: .25;
-    height: 1px;
-}
-
-/* Gaya khusus untuk grid thumbnail gambar */
-.image-thumbnail-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.image-thumbnail-item {
-  width: 120px; /* Lebar thumbnail yang sedikit lebih besar */
-  height: 120px; /* Tinggi thumbnail */
-  overflow: hidden;
-  position: relative;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px;
+<style scoped> /* Menggunakan scoped agar gaya ini hanya berlaku untuk komponen ini */
+.galeri {
+  padding: 20px;
   text-align: center;
 }
 
-.image-thumbnail-item img {
-  max-width: 100%;
-  max-height: 80px; 
-  object-fit: contain; 
-  border-radius: 4px;
+.galeri h2 {
+  margin-bottom: 10px;
+  font-size: 2em;
+  color: #333;
 }
 
-.image-thumbnail-overlay {
+.galeri p {
+  margin-bottom: 30px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Gaya untuk grid gambar galeri */
+.gallery-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsif, min 280px, memenuhinya */
+  gap: 15px; /* Jarak antar gambar */
+  max-width: 1200px; /* Batasi lebar maksimum galeri */
+  margin: 0 auto 50px auto; /* Pusatkan galeri dan beri margin bawah */
+  padding: 0 15px; /* Padding samping untuk layar kecil */
+}
+
+.gallery-item {
+  overflow: hidden;
+  border-radius: 10px; /* Sudut membulat */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Bayangan yang lebih menonjol */
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Untuk efek hover overlay */
+  height: 200px; /* Tinggi item galeri yang seragam */
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Penting agar gambar mengisi area item dan terpotong jika perlu */
+  display: block; 
+  transition: transform 0.3s ease; /* Efek hover zoom */
+}
+
+.gallery-item:hover img {
+  transform: scale(1.08); /* Efek zoom saat hover */
+}
+
+/* Overlay saat hover (opsional, untuk tombol/teks) */
+.gallery-item:hover::after {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.6); /* Lebih gelap sedikit untuk kontras tombol */
-  display: flex;
-  flex-direction: column; /* Tumpuk tombol secara vertikal */
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 8px;
-  gap: 5px; /* Jarak antar tombol */
-}
-
-.image-thumbnail-item:hover .image-thumbnail-overlay {
+  background-color: rgba(0,0,0,0.3); /* Overlay gelap saat hover */
   opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
-.image-thumbnail-overlay button {
-  font-size: 0.7em;
-  padding: 3px 6px;
-  width: 80px; /* Lebar tombol agar konsisten */
+/* Tambahan untuk tampilan saat tidak ada gambar */
+.no-images-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Media Query untuk mengatur grid pada layar yang lebih besar (misal 3 kolom) */
+@media (min-width: 992px) {
+  .gallery-grid-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 kolom di desktop */
+  }
+}
+
+/* Media Query untuk 2 kolom di tablet */
+@media (min-width: 600px) and (max-width: 991px) {
+  .gallery-grid-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 kolom di tablet */
+  }
+}
+
+/* Media Query untuk 1 kolom di mobile */
+@media (max-width: 599px) {
+  .gallery-grid-container {
+    grid-template-columns: 1fr; /* 1 kolom di mobile */
+  }
+  .gallery-item {
+    height: 250px; /* Tinggi item galeri di mobile */
+  }
 }
 </style>
