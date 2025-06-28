@@ -145,13 +145,28 @@
               <textarea class="form-control" id="gallery_intro_body" v-model="page.gallery_intro_body" rows="5"></textarea>
               <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
             </div>
+            
+            <!-- Bagian untuk Upload dan Kelola Gambar Galeri -->
             <div class="mb-3">
-                <label for="images" class="form-label">URL Gambar Galeri (JSON Array)</label>
-                <textarea class="form-control" id="images" v-model="page.images" rows="5" placeholder='["/path/to/img1.jpg", "/path/to/img2.jpg"]'></textarea>
-                <small class="form-text text-muted">Masukkan URL gambar sebagai JSON array. Contoh: ["/assets/galeri/img1.jpg", "/assets/galeri/img2.jpg"]</small>
-                <div v-if="validationErrors.images" class="text-danger mt-1">{{ validationErrors.images[0] }}</div>
+              <label class="form-label">Manajemen Gambar Galeri</label>
+              <input type="file" ref="galleryImageInput" @change="handleGalleryImageSelect" class="form-control mb-2" accept="image/*">
+              <button type="button" @click="uploadGalleryImage" class="btn btn-info btn-sm">Unggah Gambar Baru</button>
+              <span v-if="uploadingImage" class="ms-2 text-muted">Mengunggah...</span>
+              <p v-if="uploadError" class="text-danger mt-1">{{ uploadError }}</p>
+              <p v-if="uploadSuccessMessage" class="text-success mt-1">{{ uploadSuccessMessage }}</p>
+
+              <div class="mt-3 image-thumbnail-grid">
+                <div v-for="(imgUrl, idx) in page.images" :key="idx" class="image-thumbnail-item card">
+                  <img :src="imgUrl" class="img-thumbnail" alt="Galeri">
+                  <div class="image-thumbnail-overlay">
+                    <button type="button" @click="removeGalleryImage(idx)" class="btn btn-danger btn-sm">Hapus</button>
+                  </div>
+                  <small class="text-muted text-truncate w-100 mt-1">{{ imgUrl }}</small>
+                </div>
+                <p v-if="page.images.length === 0" class="text-muted mt-2">Belum ada gambar di galeri ini.</p>
+              </div>
             </div>
-            </div>
+          </div>
 
           <hr>
           <div v-if="page.slug === 'kontak'">
@@ -259,6 +274,10 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
+const galleryImageInput = ref(null); // Ref untuk input file
+const uploadingImage = ref(false);
+const uploadError = ref(null);
+const uploadSuccessMessage = ref(null);
 
 const config = useRuntimeConfig(); 
 const API_BASE_URL = config.public.apiBase; 
@@ -341,6 +360,74 @@ async function updatePage() {
     console.error('Error updating page:', e);
   }
 }
+
+// === Metode Baru untuk Upload Gambar Galeri ===
+function handleGalleryImageSelect(event) {
+  const file = event.target.files[0];
+  if (file) {
+    uploadError.value = null;
+    uploadSuccessMessage.value = null;
+    // File dipilih, siap untuk diupload
+  }
+}
+
+async function uploadGalleryImage() {
+  const file = galleryImageInput.value.files[0];
+  if (!file) {
+    uploadError.value = "Pilih gambar untuk diunggah.";
+    return;
+  }
+
+  uploadingImage.value = true;
+  uploadError.value = null;
+  uploadSuccessMessage.value = null;
+
+  const formData = new FormData();
+  formData.append('image', file); // 'image' harus sesuai dengan nama field di multer.single('image')
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/upload-image`, { // Endpoint upload baru
+      method: 'POST',
+      body: formData // FormData tidak perlu Content-Type header manual
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengunggah gambar.');
+    }
+
+    const result = await response.json();
+    const imageUrl = result.publicUrl; // Asumsikan backend mengembalikan { publicUrl: '...' }
+
+    if (imageUrl) {
+      // Tambahkan URL gambar ke array images di page.value
+      if (!Array.isArray(page.value.images)) {
+        page.value.images = [];
+      }
+      page.value.images.push(imageUrl);
+      uploadSuccessMessage.value = 'Gambar berhasil diunggah!';
+      // Reset input file setelah upload sukses
+      galleryImageInput.value.value = '';
+    } else {
+      throw new Error('URL gambar tidak diterima dari server.');
+    }
+
+  } catch (e) {
+    uploadError.value = e.message;
+    console.error('Upload image error:', e);
+  } finally {
+    uploadingImage.value = false;
+  }
+}
+
+function removeGalleryImage(index) {
+  if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
+    page.value.images.splice(index, 1);
+    successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
+    setTimeout(() => successMessage.value = null, 3000);
+  }
+}
+
 </script>
 
 <style scoped>
@@ -371,5 +458,57 @@ hr {
     border: 0;
     opacity: .25;
     height: 1px;
+}
+
+.image-thumbnail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.image-thumbnail-item {
+  width: 100px; /* Lebar thumbnail */
+  height: 100px; /* Tinggi thumbnail */
+  overflow: hidden;
+  position: relative;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+}
+
+.image-thumbnail-item img {
+  max-width: 100%;
+  max-height: 80px; /* Batasi tinggi gambar agar tombol hapus terlihat */
+  object-fit: contain; /* Jaga aspek rasio */
+  border-radius: 4px;
+}
+
+.image-thumbnail-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 8px;
+}
+
+.image-thumbnail-item:hover .image-thumbnail-overlay {
+  opacity: 1;
+}
+
+.image-thumbnail-overlay button {
+  font-size: 0.7em;
+  padding: 3px 6px;
 }
 </style>
