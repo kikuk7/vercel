@@ -76,7 +76,7 @@ export default {
         },
         {
           title: "Plendes Mii",
-          model: "/assets/Product/bcbc.glb",
+          model: "/assets/Product/ppp.glb",
           description: "Komponen perlengkapan knalpot motor, berfungsi sebagai sambungan atau dudukan knalpot agar terpasang dengan presisi.",
           specs: [
             "Bahan: Plat besi",
