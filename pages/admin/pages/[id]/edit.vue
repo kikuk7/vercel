@@ -32,15 +32,33 @@
           </div>
           
           <div class="mb-3">
-            <label for="hero_video_url" class="form-label">URL Video Hero (MP4)</label>
+            <label for="hero_video_source_type" class="form-label">Tipe Sumber Video Hero</label>
+            <select class="form-control" id="hero_video_source_type" v-model="page.hero_video_source_type">
+              <option value="mp4">File MP4 Lokal/URL Langsung</option>
+              <option value="youtube">YouTube URL</option>
+              <option value="drive">Google Drive Video URL</option>
+              <option value="">Tidak Ada Video</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="hero_video_url" class="form-label">URL Video Hero</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4'</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (untuk MP4), 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' (untuk YouTube), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Video)</small>
           </div>
 
           <div class="mb-3">
-            <label for="hero_image_url" class="form-label">URL Gambar Hero (Fallback jika tidak ada video)</label>
+            <label for="hero_image_source_type" class="form-label">Tipe Sumber Gambar Hero</label>
+            <select class="form-control" id="hero_image_source_type" v-model="page.hero_image_source_type">
+              <option value="static">File Gambar Lokal/Static</option>
+              <option value="external">URL Gambar Eksternal (JPG/PNG)</option>
+              <option value="drive">Google Drive Gambar URL</option>
+              <option value="">Tidak Ada Gambar</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="hero_image_url" class="form-label">URL Gambar Hero</label>
             <input type="text" class="form-control" id="hero_image_url" v-model="page.hero_image_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg'</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (untuk Static), 'https://example.com/image.jpg' (untuk Eksternal), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Gambar)</small>
           </div>
 
           <hr>
@@ -110,6 +128,12 @@
                 <textarea class="form-control" :id="`service_${i}_body`" v-model="page[`service_${i}_body`]" rows="3"></textarea>
                 <div v-if="validationErrors[`service_${i}_body`]" class="text-danger mt-1">{{ validationErrors[`service_${i}_body`][0] }}</div>
               </div>
+              <div class="mb-3">
+                <label :for="`service_${i}_image_url`" class="form-label">URL Gambar Kartu Layanan {{ i }}</label>
+                <input type="text" class="form-control" :id="`service_${i}_image_url`" v-model="page[`service_${i}_image_url`]">
+                <small class="form-text text-muted">Contoh: '/static/assets/layanan1.jpg'</small>
+                <div v-if="validationErrors[`service_${i}_image_url`]" class="text-danger mt-1">{{ validationErrors[`service_${i}_image_url`][0] }}</div>
+              </div>
             </template>
           </div>
 
@@ -121,11 +145,11 @@
               <textarea class="form-control" id="gallery_intro_body" v-model="page.gallery_intro_body" rows="5"></textarea>
               <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
             </div>
-            <!-- Form untuk images - hanya jika Anda ingin mengedit array JSONB di form -->
             <div class="mb-3">
                 <label for="images" class="form-label">URL Gambar Galeri (JSON Array)</label>
                 <textarea class="form-control" id="images" v-model="page.images" rows="5" placeholder='["/path/to/img1.jpg", "/path/to/img2.jpg"]'></textarea>
                 <small class="form-text text-muted">Masukkan URL gambar sebagai JSON array. Contoh: ["/assets/galeri/img1.jpg", "/assets/galeri/img2.jpg"]</small>
+                <div v-if="validationErrors.images" class="text-danger mt-1">{{ validationErrors.images[0] }}</div>
             </div>
             </div>
 
@@ -221,7 +245,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useRuntimeConfig } from '#app'; // Import useRuntimeConfig
+import { useRuntimeConfig } from '#app'; 
 
 definePageMeta({
   layout: 'admin',
@@ -236,8 +260,8 @@ const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
 
-const config = useRuntimeConfig(); // Ambil runtime config
-const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+const config = useRuntimeConfig(); 
+const API_BASE_URL = config.public.apiBase; 
 
 
 onMounted(async () => {
@@ -257,6 +281,19 @@ async function fetchPage(idOrSlug) {
       throw new Error(errorData.message || 'Gagal mengambil data halaman.');
     }
     page.value = await response.json(); 
+    
+    // Perbaikan: Parse images JSONB dari string jika perlu
+    if (typeof page.value.images === 'string' && page.value.images.startsWith('[')) {
+      try {
+        page.value.images = JSON.parse(page.value.images);
+      } catch (e) {
+        console.error("Failed to parse images JSON for edit form:", e);
+        page.value.images = []; // Fallback to empty array
+      }
+    } else if (!Array.isArray(page.value.images)) {
+        page.value.images = []; // Ensure it's an array for consistency
+    }
+
   } catch (e) {
     errorMessage.value = e.message;
     console.error('Error fetching page:', e);
@@ -269,12 +306,20 @@ async function updatePage() {
   validationErrors.value = {};
 
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/${page.value.id}`, { 
+    // Perbaikan: Konversi array images kembali menjadi string JSON sebelum dikirim ke backend
+    const pageDataToSend = { ...page.value };
+    if (Array.isArray(pageDataToSend.images)) {
+        pageDataToSend.images = JSON.stringify(pageDataToSend.images);
+    } else {
+        pageDataToSend.images = '[]'; // Pastikan string JSON kosong jika tidak ada array
+    }
+
+    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, { 
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(page.value)
+      body: JSON.stringify(pageDataToSend) // Kirim objek yang sudah diolah
     });
 
     if (!response.ok) {
@@ -320,11 +365,11 @@ async function updatePage() {
 .btn-success { background-color: #198754; border-color: #198754; color: white; }
 .btn-secondary { background-color: #6c757d; border-color: #6c757d; color: white; }
 hr {
-margin: 1rem 0;
-color: inherit;
-background-color: currentColor;
-border: 0;
-opacity: .25;
-height: 1px;
+    margin: 1rem 0;
+    color: inherit;
+    background-color: currentColor;
+    border: 0;
+    opacity: .25;
+    height: 1px;
 }
 </style>
