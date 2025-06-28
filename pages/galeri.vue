@@ -9,21 +9,13 @@
       
       <!-- Mengulang array 'images' dari data API -->
       <div class="parent">
-        <div class="div7"><img src="/assets/Foto Galeri/DSCF5415.JPG" alt="Galeri 1"></div>
-        <div class="div8"><img src="/assets/Foto Galeri/5.jpg" alt="Galeri 2"></div>
-        <div class="div9"><img src="/assets/Foto Galeri/DSCF5362.JPG" alt="Galeri 3"></div>
-        <div class="div10"><img src="/assets/DSCF5374.JPG" alt="Galeri 4"></div>
-        <div class="div11"><img src="/assets/Foto Galeri/DSCF5418.JPG" alt="Galeri 5"></div>
-        <div class="div12"><img src="/assets/DSCF5359.JPG" alt="Galeri 6"></div>
-        <div class="div13"><img src="/assets/DSCF5365.JPG" alt="Galeri 7"></div>
-        <div class="div14"><img src="/assets/DSCF5361.JPG" alt="Galeri 8"></div>
-        <div class="div15"><img src="/assets/Foto Galeri/DSCF5421.JPG" alt="Galeri 9"></div>
-        <div class="div16"><img src="/assets/DSCF5360.JPG" alt="Galeri 10"></div>
-        <div class="div17"><img src="/assets/DSCF5385.JPG" alt="Galeri 11"></div>
-        <div class="div18"><img src="/assets/tentang.JPG" alt="Galeri 12"></div>
-      
-      
+        <!-- Menggunakan v-for untuk setiap URL gambar di page.images -->
+        <!-- :key="imageUrl" atau :key="index" lebih disarankan -->
+        <div v-for="(imageUrl, index) in page.images" :key="index" :class="`div${7 + index}`">
+          <img :src="imageUrl" :alt="`Galeri ${index + 1}`">
+        </div>
       </div>
+      <!-- Pesan jika tidak ada gambar -->
       <div v-if="!page.images || page.images.length === 0" class="no-images-message">
         Tidak ada gambar untuk ditampilkan.
       </div>
@@ -57,24 +49,25 @@ export default {
         }
         const data = await response.json();
         
-        // Pastikan page.images diisi dengan array dari database
-        // Jika kolom images di DB adalah JSONB, ia akan langsung menjadi array di sini
+        // Pasangkan data yang diterima langsung ke properti 'page'
         this.page = data; 
         
-        // Opsional: Jika data.images datang sebagai string JSON, Anda perlu mem-parse-nya:
-        if (typeof this.page.images === 'string') { // Periksa jika string
+        // PENTING: Periksa dan parse 'images' jika datang sebagai string JSON (dari DB JSONB)
+        // PostgreSQL sering mengembalikan JSONB sebagai objek/array, tapi kadang sebagai string.
+        if (typeof this.page.images === 'string' && this.page.images.startsWith('[')) {
           try {
             this.page.images = JSON.parse(this.page.images);
           } catch (parseError) {
-            console.error('Failed to parse images JSON from DB:', parseError);
+            console.error('Gagal mengurai JSON gambar dari DB:', parseError);
             this.page.images = []; // Set ke array kosong jika parsing gagal
           }
-        } else if (!Array.isArray(this.page.images)) { // Jika bukan string atau array
-            this.page.images = []; // Pastikan ini array
+        } else if (!Array.isArray(this.page.images)) {
+          // Jika bukan string atau array (misalnya NULL), pastikan menjadi array kosong
+          this.page.images = []; 
         }
       } catch (error) {
         console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
-        // Fallback data
+        // Fallback data jika gagal mengambil dari API
         this.page.gallery_intro_body = 'Gagal memuat galeri.';
         this.page.images = []; // Pastikan tetap array kosong agar tidak error di template
       }
@@ -94,12 +87,38 @@ export default {
   }
 }
 </script>
+
 <style>
 /* Add galeri.css content here */
 /* Tambahan untuk tampilan saat tidak ada gambar */
+.no-images-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
 
+/* Gaya dasar untuk setiap item gambar di galeri */
+.parent {
+  display: grid; /* Atau flex, sesuaikan dengan layout galeri Anda */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Contoh grid responsif */
+  gap: 10px; /* Jarak antar gambar */
+}
 
-/* Pastikan styling untuk div.parent dan div.divX masih relevan atau sesuaikan */
-/* Misalnya, jika div.divX tidak lagi perlu index spesifik, Anda bisa ubah */
-/* .parent > div { width: ..., height: ..., etc. } */
+.parent > div {
+  overflow: hidden;
+  border-radius: 8px; /* Sudut membulat */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Bayangan */
+}
+
+.parent img {
+  width: 100%;
+  height: 100%; /* Memastikan gambar mengisi div */
+  object-fit: cover; /* Penting agar gambar tidak terdistorsi */
+  display: block; /* Menghilangkan spasi ekstra di bawah gambar */
+  transition: transform 0.3s ease; /* Efek hover zoom */
+}
+
+.parent img:hover {
+  transform: scale(1.05); /* Efek zoom saat hover */
+}
 </style>
