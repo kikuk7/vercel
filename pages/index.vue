@@ -4,7 +4,7 @@
       <div class="container">
         <div class="hero-image-wrapper">
           <video autoplay muted loop v-if="page.hero_video_url">
-            <source src="/static/assets/beranda.mp4" type="video/mp4" />
+            <source src="/static/assets/brnd.mov" type="video/mov" />
             Browser Anda tidak mendukung video.
           </video>
           <img :src="page.hero_image_url" :alt="page.hero_title" v-else-if="page.hero_image_url" class="hero-image-fallback" />
