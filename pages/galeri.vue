@@ -8,10 +8,9 @@
       </p>
       
       <!-- Mengulang array 'images' dari data API -->
-      <div class="parent">
-        <!-- Menggunakan v-for untuk setiap URL gambar di page.images -->
-        <!-- :key="imageUrl" atau :key="index" lebih disarankan -->
-        <div v-for="(imageUrl, index) in page.images" :key="index" :class="`div${7 + index}`">
+      <div class="gallery-grid-container"> <!-- Mengubah nama kelas untuk kejelasan -->
+        <!-- Setiap item galeri akan memiliki kelas 'gallery-item' -->
+        <div v-for="(imageUrl, index) in page.images" :key="index" class="gallery-item">
           <img :src="imageUrl" :alt="`Galeri ${index + 1}`">
         </div>
       </div>
@@ -53,23 +52,21 @@ export default {
         this.page = data; 
         
         // PENTING: Periksa dan parse 'images' jika datang sebagai string JSON (dari DB JSONB)
-        // PostgreSQL sering mengembalikan JSONB sebagai objek/array, tapi kadang sebagai string.
         if (typeof this.page.images === 'string' && this.page.images.startsWith('[')) {
           try {
             this.page.images = JSON.parse(this.page.images);
           } catch (parseError) {
             console.error('Gagal mengurai JSON gambar dari DB:', parseError);
-            this.page.images = []; // Set ke array kosong jika parsing gagal
+            this.page.images = []; 
           }
         } else if (!Array.isArray(this.page.images)) {
-          // Jika bukan string atau array (misalnya NULL), pastikan menjadi array kosong
           this.page.images = []; 
         }
       } catch (error) {
         console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
         // Fallback data jika gagal mengambil dari API
         this.page.gallery_intro_body = 'Gagal memuat galeri.';
-        this.page.images = []; // Pastikan tetap array kosong agar tidak error di template
+        this.page.images = []; 
       }
     }
   },
@@ -88,37 +85,103 @@ export default {
 }
 </script>
 
-<style>
-/* Add galeri.css content here */
+<style scoped> /* Menggunakan scoped agar gaya ini hanya berlaku untuk komponen ini */
+.galeri {
+  padding: 20px;
+  text-align: center;
+}
+
+.galeri h2 {
+  margin-bottom: 10px;
+  font-size: 2em;
+  color: #333;
+}
+
+.galeri p {
+  margin-bottom: 30px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Gaya untuk grid gambar galeri */
+.gallery-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsif, min 280px, memenuhinya */
+  gap: 15px; /* Jarak antar gambar */
+  max-width: 1200px; /* Batasi lebar maksimum galeri */
+  margin: 0 auto 50px auto; /* Pusatkan galeri dan beri margin bawah */
+  padding: 0 15px; /* Padding samping untuk layar kecil */
+}
+
+.gallery-item {
+  overflow: hidden;
+  border-radius: 10px; /* Sudut membulat */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Bayangan yang lebih menonjol */
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Untuk efek hover overlay */
+  height: 200px; /* Tinggi item galeri yang seragam */
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Penting agar gambar mengisi area item dan terpotong jika perlu */
+  display: block; 
+  transition: transform 0.3s ease; /* Efek hover zoom */
+}
+
+.gallery-item:hover img {
+  transform: scale(1.08); /* Efek zoom saat hover */
+}
+
+/* Overlay saat hover (opsional, untuk tombol/teks) */
+.gallery-item:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.3); /* Overlay gelap saat hover */
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
 /* Tambahan untuk tampilan saat tidak ada gambar */
 .no-images-message {
   text-align: center;
   padding: 20px;
   color: #666;
+  font-style: italic;
 }
 
-/* Gaya dasar untuk setiap item gambar di galeri */
-.parent {
-  display: grid; /* Atau flex, sesuaikan dengan layout galeri Anda */
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Contoh grid responsif */
-  gap: 10px; /* Jarak antar gambar */
+/* Media Query untuk mengatur grid pada layar yang lebih besar (misal 3 kolom) */
+@media (min-width: 992px) {
+  .gallery-grid-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 kolom di desktop */
+  }
 }
 
-.parent > div {
-  overflow: hidden;
-  border-radius: 8px; /* Sudut membulat */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Bayangan */
+/* Media Query untuk 2 kolom di tablet */
+@media (min-width: 600px) and (max-width: 991px) {
+  .gallery-grid-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 kolom di tablet */
+  }
 }
 
-.parent img {
-  width: 100%;
-  height: 100%; /* Memastikan gambar mengisi div */
-  object-fit: cover; /* Penting agar gambar tidak terdistorsi */
-  display: block; /* Menghilangkan spasi ekstra di bawah gambar */
-  transition: transform 0.3s ease; /* Efek hover zoom */
-}
-
-.parent img:hover {
-  transform: scale(1.05); /* Efek zoom saat hover */
+/* Media Query untuk 1 kolom di mobile */
+@media (max-width: 599px) {
+  .gallery-grid-container {
+    grid-template-columns: 1fr; /* 1 kolom di mobile */
+  }
+  .gallery-item {
+    height: 250px; /* Tinggi item galeri di mobile */
+  }
 }
 </style>
