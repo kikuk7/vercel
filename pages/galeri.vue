@@ -1,15 +1,15 @@
 <template>
   <main>
-    <section class="galeri">
-      <h2>Galeri Kami</h2>
-      <p>
+    <!-- Wrapper baru untuk mengontrol lebar dan pemusatan seluruh bagian galeri -->
+    <section class="galeri-section-wrapper"> 
+      <h2 class="galeri-title">Galeri Kami</h2>
+      <p class="galeri-description">
         <!-- Menggunakan gallery_intro_body dari database -->
         {{ page.gallery_intro_body }}
       </p>
       
-      <!-- Mengulang array 'images' dari data API -->
-      <div class="gallery-grid-container"> <!-- Mengubah nama kelas untuk kejelasan -->
-        <!-- Setiap item galeri akan memiliki kelas 'gallery-item' -->
+      <!-- Grid untuk gambar galeri -->
+      <div class="gallery-grid-container"> 
         <div v-for="(imageUrl, index) in page.images" :key="index" class="gallery-item">
           <img :src="imageUrl" :alt="`Galeri ${index + 1}`">
         </div>
@@ -48,7 +48,6 @@ export default {
         }
         const data = await response.json();
         
-        // Pasangkan data yang diterima langsung ke properti 'page'
         this.page = data; 
         
         // PENTING: Periksa dan parse 'images' jika datang sebagai string JSON (dari DB JSONB)
@@ -86,20 +85,24 @@ export default {
 </script>
 
 <style scoped> /* Menggunakan scoped agar gaya ini hanya berlaku untuk komponen ini */
-.galeri {
-  padding: 20px;
-  text-align: center;
+/* Gaya Dasar untuk Bagian Galeri Keseluruhan */
+.galeri-section-wrapper {
+  padding: 20px 15px; /* Padding samping untuk responsivitas */
+  text-align: center; /* Memusatkan teks di dalamnya */
+  max-width: 1200px; /* Batas lebar maksimum untuk seluruh bagian galeri */
+  margin-left: auto; /* Memusatkan bagian galeri secara horizontal */
+  margin-right: auto;
 }
 
-.galeri h2 {
+.galeri-title {
   margin-bottom: 10px;
-  font-size: 2em;
+  font-size: 2.5em; /* Ukuran judul yang sedikit lebih besar */
   color: #333;
 }
 
-.galeri p {
+.galeri-description {
   margin-bottom: 30px;
-  max-width: 800px;
+  max-width: 800px; /* Batasi lebar deskripsi agar tidak terlalu panjang */
   margin-left: auto;
   margin-right: auto;
   color: #555;
@@ -109,11 +112,10 @@ export default {
 /* Gaya untuk grid gambar galeri */
 .gallery-grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsif, min 280px, memenuhinya */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsif: min 280px, memenuhi ruang */
   gap: 15px; /* Jarak antar gambar */
-  max-width: 1200px; /* Batasi lebar maksimum galeri */
-  margin: 0 auto 50px auto; /* Pusatkan galeri dan beri margin bawah */
-  padding: 0 15px; /* Padding samping untuk layar kecil */
+  /* max-width dan margin:auto tidak lagi diperlukan di sini karena sudah ditangani oleh .galeri-section-wrapper */
+  margin-bottom: 50px; /* Margin bawah untuk memisahkan dari konten lain */
 }
 
 .gallery-item {
@@ -122,9 +124,9 @@ export default {
   box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Bayangan yang lebih menonjol */
   background-color: #fff;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative; /* Untuk efek hover overlay */
+  justify-content: center; /* Memusatkan gambar secara horizontal di dalam item */
+  align-items: center; /* Memusatkan gambar secara vertikal di dalam item */
+  position: relative; 
   height: 200px; /* Tinggi item galeri yang seragam */
 }
 

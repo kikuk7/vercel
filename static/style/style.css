@@ -107,6 +107,7 @@ header {
   text-decoration: none;
   transition: color 0.3s ease;
   text-transform: uppercase;
+  font-weight: bold;
 }
 
 .nav-links a:hover {
