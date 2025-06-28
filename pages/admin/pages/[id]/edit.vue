@@ -59,6 +59,13 @@
             <label for="hero_image_url" class="form-label">URL Gambar Hero</label>
             <input type="text" class="form-control" id="hero_image_url" v-model="page.hero_image_url">
             <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (untuk Static), 'https://example.com/image.jpg' (untuk Eksternal), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Gambar)</small>
+            
+            <!-- Tambahan: Input file untuk upload gambar hero -->
+            <input type="file" ref="heroImageInput" @change="handleHeroImageSelect" class="form-control mt-2 mb-2" accept="image/*">
+            <button type="button" @click="uploadHeroImage" class="btn btn-info btn-sm">Unggah Gambar Hero Baru</button>
+            <span v-if="uploadingHeroImage" class="ms-2 text-muted">Mengunggah...</span>
+            <p v-if="heroUploadError" class="text-danger mt-1">{{ heroUploadError }}</p>
+            <p v-if="heroUploadSuccessMessage" class="text-success mt-1">{{ heroUploadSuccessMessage }}</p>
           </div>
 
           <hr>
@@ -236,7 +243,7 @@
               <div class="mb-3">
                 <label :for="`faq_${i}_answer`" class="form-label">Jawaban {{ i }}</label>
                 <textarea class="form-control" :id="`faq_${i}_answer`" v-model="page[`faq_${i}_answer`]" rows="3"></textarea>
-                <div v-if="validationErrors[`faq_${i}_answer`]" class="text-danger mt-1">{{ validationErrors[`faq_${i}_answer`][0] }}</div>
+                <div v-if="validationErrors[`faq_${i}_answer`]" class="text-danger mt-1">{{ validationErrors.faq_answer[0] }}</div>
               </div>
             </template>
           </div>
@@ -278,6 +285,11 @@ const galleryImageInput = ref(null); // Ref untuk input file
 const uploadingImage = ref(false);
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
+const heroImageInput = ref(null); // Ref untuk input file gambar hero
+const uploadingHeroImage = ref(false);
+const heroUploadError = ref(null);
+const heroUploadSuccessMessage = ref(null);
+
 
 const config = useRuntimeConfig(); 
 const API_BASE_URL = config.public.apiBase; 
@@ -361,13 +373,12 @@ async function updatePage() {
   }
 }
 
-// === Metode Baru untuk Upload Gambar Galeri ===
+// === Metode untuk Upload Gambar Galeri ===
 function handleGalleryImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
     uploadError.value = null;
     uploadSuccessMessage.value = null;
-    // File dipilih, siap untuk diupload
   }
 }
 
@@ -383,12 +394,12 @@ async function uploadGalleryImage() {
   uploadSuccessMessage.value = null;
 
   const formData = new FormData();
-  formData.append('image', file); // 'image' harus sesuai dengan nama field di multer.single('image')
+  formData.append('image', file); 
 
   try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { // Endpoint upload baru
+    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
       method: 'POST',
-      body: formData // FormData tidak perlu Content-Type header manual
+      body: formData 
     });
 
     if (!response.ok) {
@@ -397,16 +408,14 @@ async function uploadGalleryImage() {
     }
 
     const result = await response.json();
-    const imageUrl = result.publicUrl; // Asumsikan backend mengembalikan { publicUrl: '...' }
+    const imageUrl = result.publicUrl; 
 
     if (imageUrl) {
-      // Tambahkan URL gambar ke array images di page.value
       if (!Array.isArray(page.value.images)) {
         page.value.images = [];
       }
       page.value.images.push(imageUrl);
       uploadSuccessMessage.value = 'Gambar berhasil diunggah!';
-      // Reset input file setelah upload sukses
       galleryImageInput.value.value = '';
     } else {
       throw new Error('URL gambar tidak diterima dari server.');
@@ -425,6 +434,60 @@ function removeGalleryImage(index) {
     page.value.images.splice(index, 1);
     successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
     setTimeout(() => successMessage.value = null, 3000);
+  }
+}
+
+// === Metode Baru untuk Upload Gambar Hero ===
+function handleHeroImageSelect(event) {
+  const file = event.target.files[0];
+  if (file) {
+    heroUploadError.value = null;
+    heroUploadSuccessMessage.value = null;
+  }
+}
+
+async function uploadHeroImage() {
+  const file = heroImageInput.value.files[0];
+  if (!file) {
+    heroUploadError.value = "Pilih gambar untuk diunggah.";
+    return;
+  }
+
+  uploadingHeroImage.value = true;
+  heroUploadError.value = null;
+  heroUploadSuccessMessage.value = null;
+
+  const formData = new FormData();
+  formData.append('image', file); 
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+      method: 'POST',
+      body: formData 
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengunggah gambar hero.');
+    }
+
+    const result = await response.json();
+    const imageUrl = result.publicUrl; 
+
+    if (imageUrl) {
+      page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
+      page.value.hero_image_source_type = 'external'; // Asumsi gambar diunggah ke eksternal
+      heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah!';
+      heroImageInput.value.value = ''; // Reset input file
+    } else {
+      throw new Error('URL gambar hero tidak diterima dari server.');
+    }
+
+  } catch (e) {
+    heroUploadError.value = e.message;
+    console.error('Upload hero image error:', e);
+  } finally {
+    uploadingHeroImage.value = false;
   }
 }
 
