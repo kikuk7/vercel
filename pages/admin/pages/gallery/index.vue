@@ -33,8 +33,11 @@
             <div v-for="(imgUrl, idx) in galleryPage.images" :key="idx" class="image-thumbnail-item">
               <img :src="imgUrl" class="img-thumbnail" :alt="`Galeri ${idx + 1}`">
               <div class="image-thumbnail-overlay">
+                <!-- Tombol Hapus -->
                 <button type="button" @click="removeGalleryImage(idx)" class="btn btn-danger btn-sm action-button">Hapus</button>
+                <!-- Tombol Pindah Atas -->
                 <button type="button" @click="moveImageUp(idx)" :disabled="idx === 0" class="btn btn-secondary btn-sm action-button">▲ Pindah Atas</button>
+                <!-- Tombol Pindah Bawah -->
                 <button type="button" @click="moveImageDown(idx)" :disabled="idx === galleryPage.images.length - 1" class="btn btn-secondary btn-sm action-button">▼ Pindah Bawah</button>
               </div>
               <small class="text-muted image-url-text">{{ truncateUrl(imgUrl) }}</small>
@@ -52,7 +55,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router'; // Impor useRouter
 import { useRuntimeConfig } from '#app';
 
 definePageMeta({
@@ -73,8 +76,9 @@ const uploadSuccessMessage = ref(null);
 
 const config = useRuntimeConfig(); 
 const API_BASE_URL = config.public.apiBase; 
+const router = useRouter(); // Inisialisasi useRouter
 
-// Fetch data for the 'galeri' page
+// Fungsi untuk memuat data halaman 'galeri'
 async function fetchGalleryPageData() {
   try {
     const response = await fetch(`${API_BASE_URL}/pages/galeri`); 
@@ -102,7 +106,7 @@ async function fetchGalleryPageData() {
   }
 }
 
-// Save gallery changes to the database
+// Fungsi untuk menyimpan perubahan galeri ke database
 async function saveGallery() {
   successMessage.value = null;
   errorMessage.value = null;
@@ -116,7 +120,7 @@ async function saveGallery() {
         pageDataToSend.images = '[]'; 
     }
 
-    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, { 
+    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, { // Menggunakan ID halaman 'galeri'
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -134,7 +138,10 @@ async function saveGallery() {
       }
     } else {
       successMessage.value = 'Galeri berhasil diperbarui!';
-      await fetchGalleryPageData(); // Reload gallery data after successful save
+      // Opsional: Muat ulang data galeri setelah sukses menyimpan (untuk konfirmasi visual)
+      await fetchGalleryPageData();
+      // Hapus query parameter jika ada (misalnya dari redirect setelah tambah)
+      router.replace({ query: null }); // Bersihkan query params
       setTimeout(() => successMessage.value = null, 3000); 
     }
   } catch (e) {
@@ -143,7 +150,7 @@ async function saveGallery() {
   }
 }
 
-// Handle file selection for gallery image upload
+// === Metode Upload Gambar ===
 function handleGalleryImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
@@ -152,7 +159,6 @@ function handleGalleryImageSelect(event) {
   }
 }
 
-// Upload selected gallery image to Supabase Storage
 async function uploadGalleryImage() {
   const file = galleryImageInput.value.files[0];
   if (!file) {
@@ -187,7 +193,7 @@ async function uploadGalleryImage() {
       }
       galleryPage.value.images.push(imageUrl);
       uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
-      galleryImageInput.value.value = ''; 
+      galleryImageInput.value.value = ''; // Reset input file
     } else {
       throw new Error('URL gambar tidak diterima dari server.');
     }
@@ -200,7 +206,6 @@ async function uploadGalleryImage() {
   }
 }
 
-// Remove gallery image from the list
 function removeGalleryImage(index) {
   if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
     galleryPage.value.images.splice(index, 1);
@@ -209,7 +214,6 @@ function removeGalleryImage(index) {
   }
 }
 
-// Move image up in the order
 function moveImageUp(index) {
   if (index > 0) {
     const images = [...galleryPage.value.images];
@@ -221,7 +225,6 @@ function moveImageUp(index) {
   }
 }
 
-// Move image down in the order
 function moveImageDown(index) {
   if (index < galleryPage.value.images.length - 1) {
     const images = [...galleryPage.value.images];
@@ -233,7 +236,7 @@ function moveImageDown(index) {
   }
 }
 
-// Truncate URL for display
+// Helper function to truncate long URLs for display
 function truncateUrl(url) {
   const maxLength = 30; // Max length to display
   if (!url) return '';
@@ -241,11 +244,10 @@ function truncateUrl(url) {
   return url.substring(0, maxLength - 3) + '...';
 }
 
-// Load gallery data when the component is mounted
-onMounted(fetchGalleryPageData); 
+onMounted(fetchGalleryPageData); // Muat data galeri saat komponen dimuat
 </script>
 
-<style scoped>
+<style scoped> /* Menggunakan scoped agar gaya ini hanya berlaku untuk komponen ini */
 /* Gaya Umum & Bootstrap-like */
 .py-3 { padding-top: 1rem; padding-bottom: 1rem; }
 .mb-3 { margin-bottom: 1rem; }
@@ -278,6 +280,8 @@ onMounted(fetchGalleryPageData);
 .text-danger { color: #dc3545 !important; }
 .text-success { color: #198754 !important; }
 .text-muted { color: #6c757d !important; }
+.text-primary { color: #007bff !important; } /* Untuk teks "Mengunggah..." */
+
 
 .btn { display: inline-block; font-weight: 400; color: #212529; text-align: center; vertical-align: middle; cursor: pointer; user-select: none; background-color: transparent; border: 1px solid transparent; padding: 0.375rem 0.75rem; font-size: 1rem; line-height: 1.5; border-radius: 0.25rem; transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out; }
 .btn-info { color: #fff; background-color: #0dcaf0; border-color: #0dcaf0; }
@@ -306,16 +310,16 @@ hr {
 }
 
 .image-thumbnail-grid {
-  display: grid; /* Menggunakan Grid untuk tata letak yang lebih rapi */
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* 120px min width, auto columns */
-  gap: 15px; /* Jarak antar thumbnail */
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+  gap: 15px; 
   padding: 10px;
-  background-color: #f0f0f0; /* Latar belakang untuk area gambar */
+  background-color: #f0f0f0; 
   border-radius: 8px;
   border: 1px dashed #ccc;
-  min-height: 150px; /* Tinggi minimum area thumbnail */
-  align-items: flex-start; /* Gambar mulai dari atas */
-  align-content: flex-start; /* Gambar akan mengisi ke atas jika ada spasi */
+  min-height: 150px; 
+  align-items: flex-start; 
+  align-content: flex-start; 
 }
 
 .image-thumbnail-item {
@@ -324,7 +328,7 @@ hr {
   overflow: hidden;
   position: relative;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Bayangan yang lebih menonjol */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
   background-color: #fff;
   display: flex;
   flex-direction: column;
@@ -337,7 +341,7 @@ hr {
 
 .image-thumbnail-item img {
   max-width: 100%;
-  max-height: 80px; /* Batasi tinggi gambar agar URL terlihat */
+  max-height: 80px; 
   object-fit: contain; 
   border-radius: 4px;
 }
@@ -348,7 +352,7 @@ hr {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.7); /* Lebih gelap untuk kontras tombol */
+  background-color: rgba(0,0,0,0.7); 
   display: flex;
   flex-direction: column; 
   justify-content: center;
@@ -356,7 +360,7 @@ hr {
   opacity: 0;
   transition: opacity 0.3s ease;
   border-radius: 8px;
-  gap: 8px; /* Jarak antar tombol */
+  gap: 8px; 
 }
 
 .image-thumbnail-item:hover .image-thumbnail-overlay {
@@ -364,15 +368,15 @@ hr {
 }
 
 .action-button {
-  width: 90px; /* Lebar tombol agar konsisten */
+  width: 90px; 
   font-size: 0.75em;
   padding: 5px 8px;
 }
 
 .image-url-text {
-  font-size: 0.65em; /* Ukuran font lebih kecil untuk URL */
-  word-break: break-all; /* Memastikan URL panjang tidak meluap */
-  white-space: normal; /* Biarkan teks melipat */
+  font-size: 0.65em; 
+  word-break: break-all; 
+  white-space: normal; 
   margin-top: 5px;
   color: #666;
 }
@@ -380,7 +384,7 @@ hr {
 .empty-gallery-message {
     font-style: italic;
     color: #888;
-    grid-column: 1 / -1; /* Agak pesan mengisi seluruh kolom grid */
+    grid-column: 1 / -1; 
     text-align: center;
     padding: 20px 0;
 }
