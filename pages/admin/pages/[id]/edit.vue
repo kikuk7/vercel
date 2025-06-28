@@ -386,7 +386,7 @@ async function uploadGalleryImage() {
   formData.append('image', file); // 'image' harus sesuai dengan nama field di multer.single('image')
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/upload-image`, { // Endpoint upload baru
+    const response = await fetch(`${API_BASE_URL}/upload-image`, { // Endpoint upload baru
       method: 'POST',
       body: formData // FormData tidak perlu Content-Type header manual
     });
