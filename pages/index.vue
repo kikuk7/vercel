@@ -3,35 +3,13 @@
     <section class="hero">
       <div class="container">
         <div class="hero-image-wrapper">
-          <!-- Logika Kondisional untuk Sumber Video Hero (MP4, YouTube, Drive) -->
-          <template v-if="page.hero_video_source_type === 'youtube' && page.hero_video_url">
-            <!-- YouTube Embed -->
-            <iframe
-              :src="`https://www.youtube.com/embed/${getYoutubeVideoId(page.hero_video_url)}?autoplay=1&mute=1&loop=1&playlist=${getYoutubeVideoId(page.hero_video_url)}&controls=0`" 
-              frameborder="0" 
-              allow="autoplay; encrypted-media; gyroscope; picture-in-picture" 
-              allowfullscreen 
-              class="hero-media-embed">
-            </iframe>
-          </template>
-          <template v-else-if="page.hero_video_source_type === 'drive' && page.hero_video_url">
-            <!-- Google Drive Video Embed -->
-            <iframe 
-              :src="`https://drive.google.com/file/d/${getDriveFileId(page.hero_video_url)}/preview`" 
-              frameborder="0" 
-              allow="autoplay; encrypted-media; gyroscope; picture-in-picture" 
-              allowfullscreen 
-              class="hero-media-embed">
-            </iframe>
-          </template>
-          <video autoplay muted loop v-else-if="page.hero_video_source_type === 'mp4' && page.hero_video_url">
-            <!-- MP4 Video - Pastikan src diambil dari page.hero_video_url -->
+          <!-- HANYA MP4 Video atau Gambar Hero -->
+          <video autoplay muted loop v-if="page.hero_video_url && page.hero_video_source_type === 'mp4'">
             <source :src="page.hero_video_url" type="video/mp4" />
             Browser Anda tidak mendukung video.
           </video>
-          <!-- Fallback ke gambar hero jika tidak ada video atau jenis tidak dikenal -->
+          <!-- Fallback ke gambar hero jika tidak ada video atau video bukan mp4 -->
           <img :src="page.hero_image_url" :alt="page.hero_title" v-else-if="page.hero_image_url" class="hero-image-fallback" />
-
 
           <div class="hero-text">
             <h1>{{ page.hero_title }}</h1>
@@ -58,7 +36,7 @@
 
       <div class="bottom-section">
         <div class="image-content">
-          <!-- PENTING: Gambar-gambar ini sekarang DINAMIS dari database -->
+          <!-- Gambar-gambar ini tetap DINAMIS dari database -->
           <img :src="page.homepage_bottom_image_1_url" alt="Gambar Bawah 1" class="img-small" />
           <img :src="page.homepage_bottom_image_2_url" alt="Gambar Bawah 2" class="img-large" />
           <img :src="page.homepage_bottom_image_3_url" alt="Gambar Bawah 3" class="img-small" />
@@ -81,11 +59,11 @@ export default {
         hero_title: 'Memuat...',
         hero_video_url: '',
         hero_image_url: '',
-        hero_video_source_type: 'mp4', 
-        hero_image_source_type: 'static', 
+        hero_video_source_type: 'mp4', // Default ke mp4
+        hero_image_source_type: 'static', // Default ke static
         homepage_about_section_text: 'Memuat konten...',
         homepage_services_section_text: 'Memuat konten...',
-        homepage_bottom_image_1_url: '', // Tambahan untuk gambar bawah
+        homepage_bottom_image_1_url: '', 
         homepage_bottom_image_2_url: '',
         homepage_bottom_image_3_url: ''
       }
@@ -117,27 +95,14 @@ export default {
         this.page.hero_title = 'Konten Tidak Tersedia';
         this.page.homepage_about_section_text = 'Maaf, terjadi kesalahan saat memuat konten.';
         this.page.homepage_services_section_text = 'Silakan coba lagi nanti.';
-        this.page.hero_video_source_type = 'mp4'; 
-        this.page.hero_image_source_type = 'static'; 
-        this.page.homepage_bottom_image_1_url = ''; // Fallback
+        this.page.hero_video_source_type = 'mp4'; // Fallback ke mp4
+        this.page.hero_image_source_type = 'static'; // Fallback ke static
+        this.page.homepage_bottom_image_1_url = ''; 
         this.page.homepage_bottom_image_2_url = '';
         this.page.homepage_bottom_image_3_url = '';
       }
-    },
-    // Fungsi helper untuk mendapatkan ID YouTube dari URL
-    getYoutubeVideoId(url) {
-      if (!url) return null;
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2] && match[2].length === 11) ? match[2] : null;
-    },
-    // Fungsi helper untuk mendapatkan ID File Google Drive dari URL
-    getDriveFileId(url) {
-      if (!url) return null;
-      const regExp = /(https?:\/\/drive\.google\.com\/file\/d\/|https?:\/\/drive\.google\.com\/open\?id=)([^#\&\?\/]+)/;
-      const match = url.match(regExp);
-      return (match && match[2]) ? match[2] : null;
     }
+    // Fungsi getYoutubeVideoId dan getDriveFileId DIHAPUS karena tidak lagi digunakan
   }
 }
 </script>
