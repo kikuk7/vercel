@@ -59,7 +59,7 @@
       <div class="bottom-section">
         <div class="image-content">
           <!-- PENTING: Gambar-gambar ini sekarang DINAMIS dari database -->
-          <img :src="page.homepage_bottom_image_1_url" alt="Gambar Bawah 1" class="img-small" />
+          <img src="" alt="layanan2" class="img-small">
           <img :src="page.homepage_bottom_image_2_url" alt="Gambar Bawah 2" class="img-large" />
           <img :src="page.homepage_bottom_image_3_url" alt="Gambar Bawah 3" class="img-small" />
         </div>
