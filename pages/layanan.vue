@@ -56,7 +56,7 @@ export default {
     return {
       page: {
         title: 'Memuat Layanan...',
-        hero_image_url: '', // Akan diisi dari DB
+        hero_image_url: '', 
         main_intro_body: 'Memuat konten layanan...',
         service_1_title: 'Memuat...',
         service_1_body: 'Memuat...',
@@ -93,16 +93,17 @@ export default {
         this.page = data; 
       } catch (error) {
         console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
+        // Fallback data jika terjadi error (PERBAIKAN SINTAKS DI SINI)
         this.page.title = 'Layanan Tidak Tersedia';
         this.page.main_intro_body = 'Terjadi kesalahan saat memuat layanan.';
-        this.page.service_1_title = 'Error';
-        this.page.service_1_body = 'Error';
+        this.page.service_1_title = 'Error'; // PERBAIKAN: Gunakan '='
+        this.page.service_1_body = 'Error'; // PERBAIKAN: Gunakan '='
         this.page.service_1_image_url = ''; 
-        this.page.service_2_title = 'Error';
-        this.page.service_2_body = 'Error';
+        this.page.service_2_title = 'Error'; // PERBAIKAN: Gunakan '='
+        this.page.service_2_body = 'Error'; // PERBAIKAN: Gunakan '='
         this.page.service_2_image_url = '';
-        this.page.service_3_title = 'Error';
-        this.page.service_3_body = 'Error';
+        this.page.service_3_title = 'Error'; // PERBAIKAN: Gunakan '='
+        this.page.service_3_body = 'Error'; // PERBAIKAN: Gunakan '='
         this.page.service_3_image_url = '';
       }
     }
