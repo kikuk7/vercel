@@ -5,7 +5,7 @@
         <div class="hero-image-wrapper">
           <!-- HANYA MP4 Video atau Gambar Hero -->
           <video autoplay muted loop v-if="page.hero_video_url && page.hero_video_source_type === 'mp4'">
-            <source :src="page.hero_video_url" type="video/mp4" />
+            <source src="/static/assets/brnd.mp4" type="video/mp4" />
             Browser Anda tidak mendukung video.
           </video>
           <!-- Fallback ke gambar hero jika tidak ada video atau video bukan mp4 -->
