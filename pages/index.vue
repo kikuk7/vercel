@@ -51,7 +51,6 @@ import { useRuntimeConfig } from '#app';
 
 export default {
   name: 'IndexPage',
-  mixins: [visitorStats],
   data() {
     return {
       page: {
