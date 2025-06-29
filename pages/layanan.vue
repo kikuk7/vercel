@@ -4,7 +4,7 @@
       <div class="container">
         <div class="hero-image-wrapper">
           <!-- Menggunakan page.hero_image_url dari database -->
-          <img src="/static/assets/layanan2.jpg" alt="Layanan Hero" />
+          <img :src="page.hero_image_url" :alt="page.title" class="hero-image-fallback" />
         </div>
       </div>
     </section>
@@ -21,24 +21,24 @@
 
       <div class="service-grid">
         <div class="service-card">
-          <!-- Menggunakan page.service_1_image_url dari database -->
-          <img src="/static/assets/layanan1.jpg" alt="Jasa Fabrikasi" />
+          <!-- PENTING: Gambar ini sekarang DINAMIS dari database -->
+          <img :src="page.service_1_image_url" :alt="page.service_1_title" />
           <!-- Menggunakan page.service_1_title dan page.service_1_body dari database -->
           <h3>{{ page.service_1_title }}</h3>
           <p>{{ page.service_1_body }}</p>
         </div>
 
         <div class="service-card">
-          <!-- Menggunakan page.service_2_image_url dari database -->
-          <img src="/static/assets/Foto Galeri/3.jpg" alt="Komponen Besi" />
+          <!-- PENTING: Gambar ini sekarang DINAMIS dari database -->
+          <img :src="page.service_2_image_url" :alt="page.service_2_title" />
           <!-- Menggunakan page.service_2_title dan page.service_2_body dari database -->
           <h3>{{ page.service_2_title }}</h3>
           <p>{{ page.service_2_body }}</p>
         </div>
 
         <div class="service-card">
-          <!-- Menggunakan page.service_3_image_url dari database -->
-          <img src="/static/assets/Foto Galeri/6.JPG" alt="Pengadaan Barang" />
+          <!-- PENTING: Gambar ini sekarang DINAMIS dari database -->
+          <img :src="page.service_3_image_url" :alt="page.service_3_title" />
           <!-- Menggunakan page.service_3_title dan page.service_3_body dari database -->
           <h3>{{ page.service_3_title }}</h3>
           <p>{{ page.service_3_body }}</p>
@@ -64,13 +64,13 @@ export default {
         main_intro_body: 'Memuat konten layanan...',
         service_1_title: 'Memuat...',
         service_1_body: 'Memuat...',
-        service_1_image_url: '/static/assets/layanan1.jpg', // Default
+        service_1_image_url: '', // Sekarang akan diisi dari DB
         service_2_title: 'Memuat...',
         service_2_body: 'Memuat...',
-        service_2_image_url: '/static/assets/Foto Galeri/3.jpg', // Default
+        service_2_image_url: '', // Sekarang akan diisi dari DB
         service_3_title: 'Memuat...',
         service_3_body: 'Memuat...',
-        service_3_image_url: '/static/assets/Foto Galeri/6.JPG'  // Default
+        service_3_image_url: ''  // Sekarang akan diisi dari DB
       }
     };
   },
@@ -124,5 +124,14 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Gaya untuk service-card images agar konsisten */
+.service-card img {
+  width: 100%;
+  height: 150px; /* Tinggi seragam untuk gambar kartu */
+  object-fit: cover; /* Memastikan gambar mengisi ruang */
+  border-radius: 8px; /* Sudut membulat */
+  margin-bottom: 15px; /* Jarak dari teks */
 }
 </style>
