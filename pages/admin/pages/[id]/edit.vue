@@ -35,7 +35,7 @@
           <div class="mb-3">
             <label for="hero_video_url" class="form-label">URL Video Hero (MP4/YouTube/Drive)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (untuk MP4), 'https://www.youtube.com/watch?v=ID' (untuk YouTube), 'https://drive.google.com/file/d/ID/view' (untuk Google Drive Video)</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (MP4), 'https://youtube.com/watch?v=ID' (YouTube), 'https://drive.google.com/file/d/ID/view' (Drive)</small>
             
             <!-- Pratinjau Video Hero -->
             <div v-if="page.hero_video_url" class="hero-media-preview-wrapper mt-3">
@@ -761,4 +761,4 @@ hr {
   font-size: 0.7em;
   padding: 3px 6px;
 }
-</styLE>
+</style>
