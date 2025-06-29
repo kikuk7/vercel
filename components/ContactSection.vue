@@ -10,6 +10,7 @@
       <div class="lokasi-info">
         <h3>{{ page.contact_location_title }}</h3>
         <p>{{ page.contact_location_body }}</p>
+        <!-- Tombol yang akan disembunyikan secara kondisional -->
         <a :href="`https://wa.me/${page.contact_whatsapp_number}`" 
            :class="['btn-primary', 'contact-section-btn', { 'hidden-on-specific-pages': shouldHideButton }]">
           <img src="/static/assets/icon/WA.png" alt="WhatsApp Icon" class="btn-icon-img"> hubungi kami
@@ -20,7 +21,7 @@
         <!-- PENTING: Sekarang menggunakan binding Vue ke properti data dari mixin -->
         <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Online User Icon" class="visitor-icon"> Pengguna Online: <span>{{ onlineUsers }}</span></p>
         <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Visitor Today Icon" class="visitor-icon"> Pengunjung Hari Ini: <span>{{ todayVisitors }}</span></p>
-        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Total Pengunjung:"> Total Pengunjung: <span>{{ totalVisitors }}</span></p>
+        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Total Visitor Icon" class="visitor-icon"> Total Pengunjung: <span>{{ totalVisitors }}</span></p>
       </div>
     </div>
 
@@ -34,26 +35,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute } from '#app';
-import { useRuntimeConfig } from '#app';
-import useVisitorStats from '~/mixins/visitorStats'; // Impor composable useVisitorStats
+import { ref, computed, onMounted } from 'vue'; // Impor ref, computed, onMounted
+import { useRoute } from '#app'; // Impor useRoute
+import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
-const route = useRoute();
-const config = useRuntimeConfig();
-const API_BASE_URL = config.public.apiBase;
+const route = useRoute(); // Inisialisasi useRoute
+const config = useRuntimeConfig(); // Inisialisasi useRuntimeConfig
+const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
 
-const page = ref({
+const page = ref({ // Objek 'page' akan menyimpan data kontak dari DB
   contact_email_address: 'Memuat...',
   contact_phone: 'Memuat...',
   contact_whatsapp_number: 'Memuat...',
   contact_location_title: 'Memuat...',
   contact_location_body: 'Memuat...'
 });
-
-// Panggil composable useVisitorStats
-// Ini akan menyediakan onlineUsers, todayVisitors, totalVisitors sebagai refs
-const { onlineUsers, todayVisitors, totalVisitors } = useVisitorStats();
 
 // Computed property untuk menentukan apakah tombol harus disembunyikan
 const shouldHideButton = computed(() => {
@@ -65,18 +61,19 @@ const shouldHideButton = computed(() => {
   return pagesToHideButton.includes(currentPath);
 });
 
-// Fungsi untuk memuat data halaman 'kontak' dari database
+// Fungsi untuk memuat data halaman 'kontak'
 async function fetchContactPageData() {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/kontak`); 
+    const response = await fetch(`${API_BASE_URL}/pages/kontak`); // Ambil data halaman 'kontak'
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
     }
     const data = await response.json();
-    page.value = data; 
+    page.value = data; // Pasangkan data ke properti 'page'
   } catch (error) {
     console.error(`Gagal mengambil data halaman 'kontak' dari API:`, error);
+    // Fallback data jika gagal mengambil dari API
     page.value.contact_email_address = 'Error Memuat';
     page.value.contact_phone = 'Error Memuat';
     page.value.contact_whatsapp_number = '';
@@ -85,19 +82,11 @@ async function fetchContactPageData() {
   }
 }
 
-onMounted(() => {
-  fetchContactPageData(); // Panggil saat komponen dimuat
-  // updateStats() dan setInterval() tidak perlu dipanggil di sini,
-  // karena sudah diurus oleh composable `useVisitorStats` di dalamnya sendiri.
-});
+onMounted(fetchContactPageData); // Panggil saat komponen dimuat
 </script>
 
-<style scoped>
-
-
+<style>
 .hidden-on-specific-pages {
-  display: none !important; 
+  display: none !important; /* !important untuk memastikan penimpaan gaya lain */
 }
-
-
 </style>
