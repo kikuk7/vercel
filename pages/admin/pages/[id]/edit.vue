@@ -32,12 +32,27 @@
           </div>
 
           <div class="mb-3">
-            <label for="hero_video_url" class="form-label">URL Video Hero (MP4)</label>
+            <label for="hero_video_url" class="form-label">URL Video Hero (MP4/YouTube/Drive)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4'</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4', 'https://www.youtube.com/watch?v=VIDEO_ID'</small>
 
             <div v-if="page.hero_video_url" class="hero-media-preview-wrapper mt-3">
-                <video controls :src="page.hero_video_url" class="hero-media-preview"></video>
+                <video v-if="getMediaType(page.hero_video_url) === 'mp4'" controls :src="page.hero_video_url" class="hero-media-preview"></video>
+                <iframe v-else-if="getMediaType(page.hero_video_url) === 'youtube'"
+                    :src="`https://www.youtube.com/embed/${getYoutubeVideoId(page.hero_video_url)}`"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    class="hero-media-preview"
+                ></iframe>
+                <iframe v-else-if="getMediaType(page.hero_video_url) === 'drive'"
+                    :src="`https://www.drive.google.com/file/d/${getDriveFileId(page.hero_video_url)}/preview`"
+                    frameborder="0"
+                    allow="autoplay"
+                    allowfullscreen
+                    class="hero-media-preview"
+                ></iframe>
+                <div v-else class="text-muted">Pratinjau video tidak tersedia untuk URL ini.</div>
                 <button type="button" @click="removeHeroVideo" class="btn btn-danger btn-sm hero-media-remove-btn mt-2">Hapus Video Hero</button>
             </div>
           </div>
@@ -259,6 +274,39 @@
           </div>
 
           <hr>
+          <div v-if="page.slug === 'galeri'">
+            <h4 class="mb-3">Konten Spesifik Halaman Galeri</h4>
+            <div class="mb-3">
+              <label for="gallery_intro_body" class="form-label">Paragraf Pembuka Galeri</label>
+              <textarea class="form-control" id="gallery_intro_body" v-model="page.gallery_intro_body" rows="3"></textarea>
+              <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
+            </div>
+
+            <h5 class="mt-4">Manajemen Gambar Galeri</h5>
+            <div class="mb-3">
+              <label for="galleryImageUpload" class="form-label">Unggah Gambar Baru ke Galeri</label>
+              <input type="file" ref="galleryImageInput" @change="handleGalleryImageSelect" class="form-control mt-2 mb-2" accept="image/*">
+              <button type="button" @click="uploadGalleryImage" class="btn btn-info btn-sm">Unggah Gambar ke Galeri</button>
+              <span v-if="uploadingImage" class="ms-2 text-muted">Mengunggah...</span>
+              <p v-if="uploadError" class="text-danger mt-1">{{ uploadError }}</p>
+              <p v-if="uploadSuccessMessage" class="text-success mt-1">{{ uploadSuccessMessage }}</p>
+              <small class="form-text text-muted">Gambar yang diunggah akan ditambahkan ke daftar galeri di bawah.</small>
+            </div>
+
+            <div v-if="page.images && page.images.length > 0" class="mt-4">
+              <h6>Gambar-gambar di Galeri:</h6>
+              <div class="image-thumbnail-grid">
+                <div v-for="(image, index) in page.images" :key="index" class="image-thumbnail-item">
+                  <img :src="image" alt="Gambar Galeri" class="img-thumbnail">
+                  <div class="image-thumbnail-overlay">
+                    <button type="button" @click="removeGalleryImage(index)" class="btn btn-danger btn-sm">Hapus</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p v-else class="text-muted mt-3">Tidak ada gambar di galeri ini.</p>
+          </div>
+          <hr>
           <div class="mb-3">
             <label for="body" class="form-label">Konten Halaman (Utama)</label>
             <textarea class="form-control" id="body" v-model="page.body" rows="10"></textarea>
@@ -291,8 +339,8 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
-// const galleryImageInput = ref(null); // Komentar: Ini tidak lagi digunakan di template
-const uploadingImage = ref(false); // Tetap ada untuk potensi penggunaan upload umum
+const galleryImageInput = ref(null); // Diaktifkan kembali!
+const uploadingImage = ref(false);
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
 const heroImageInput = ref(null);
@@ -344,26 +392,27 @@ async function fetchPage(idOrSlug) {
 // Fungsi untuk menentukan tipe media berdasarkan URL
 const getMediaType = (url) => {
     if (!url) return '';
-    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
-    if (url.includes('drive.google.com') && url.includes('file/d/')) return 'drive';
+    // Perbaikan regex untuk YouTube dan Google Drive
+    if (url.includes('youtube.com/watch?v=') || url.includes('youtu.be/')) return 'youtube';
+    if (url.includes('drive.google.com/file/d/')) return 'drive';
     if (url.match(/\.(mp4|webm|ogg)$/i)) return 'mp4';
-    return 'static';
+    return 'static'; // Default untuk gambar atau URL statis lainnya
 };
 
 // Fungsi helper untuk mendapatkan ID YouTube dari URL
 const getYoutubeVideoId = (url) => {
     if (!url) return null;
-    const regExp = /^.*(http:\/\/www.youtube.com\/watch\?v=|http:\/\/youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; // Diperbaiki regex untuk YouTube
+    const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regExp);
-    return (match && match[2] && match[2].length === 11) ? match[2] : null;
+    return (match && match[1]) ? match[1] : null;
 };
 
 // Fungsi helper untuk mendapatkan ID File Google Drive dari URL
 const getDriveFileId = (url) => {
     if (!url) return null;
-    const regExp = /(https?:\/\/drive\.google\.com\/file\/d\/|https?:\/\/drive\.google\.com\/open\?id=)([^#\&\?\/]+)/;
+    const regExp = /(?:drive\.google\.com\/file\/d\/|drive\.google\.com\/open\?id=)([^#\&\?\/]+)/;
     const match = url.match(regExp);
-    return (match && match[2]) ? match[2] : null;
+    return (match && match[1]) ? match[1] : null;
 };
 
 // Fungsi untuk menghapus video hero (jika ada)
@@ -425,10 +474,7 @@ async function updatePage() {
   }
 }
 
-// === Metode untuk Upload Gambar Galeri (TETAP DI SINI UNTUK GALERI SLUG) ===
-// Ini akan muncul jika page.slug === 'galeri' seperti di template
-// Catatan: Karena bagian galeri di template dikomentari, fungsi ini tidak akan terpicu secara UI.
-// Anda bisa menghapusnya jika memang tidak lagi dibutuhkan di halaman ini.
+// === Metode untuk Upload Gambar Galeri (Diaktifkan Kembali) ===
 function handleGalleryImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
@@ -438,8 +484,6 @@ function handleGalleryImageSelect(event) {
 }
 
 async function uploadGalleryImage() {
-  // Pastikan galleryImageInput direferensikan dengan benar jika Anda mengaktifkan kembali bagian galeri
-  // Saat ini, galleryImageInput dikomentari di deklarasi ref, jadi ini akan gagal jika tidak di-uncomment
   const file = galleryImageInput.value?.files[0]; // Gunakan optional chaining untuk keamanan
   if (!file) {
     uploadError.value = "Pilih gambar untuk diunggah.";
@@ -473,8 +517,8 @@ async function uploadGalleryImage() {
       }
       page.value.images.push(imageUrl);
       uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
-      if (galleryImageInput.value) { // Pastikan elemen ada sebelum direset
-        galleryImageInput.value.value = ''; // Ini sudah benar
+      if (galleryImageInput.value) {
+        galleryImageInput.value.value = ''; // Reset input file
       }
     } else {
       throw new Error('URL gambar tidak diterima dari server.');
@@ -538,7 +582,7 @@ async function uploadHeroImage() {
       page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
       // Tipe sumber akan disimpulkan di updatePage
       heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah! Klik Simpan Perubahan untuk menyimpan.';
-      heroImageInput.value.value = ''; // Reset input file (INI SUDAH BENAR)
+      heroImageInput.value.value = ''; // Reset input file
     } else {
       throw new Error('URL gambar hero tidak diterima dari server.');
     }
@@ -579,8 +623,7 @@ function handleSpecificImageSelect(event, propName, index) {
     }
 }
 
-// *** PENTING: Perubahan pada parameter pertama dari inputRef menjadi inputElement ***
-async function uploadSpecificImage(inputElement, propName, index) { // Ganti 'inputRef' menjadi 'inputElement'
+async function uploadSpecificImage(inputElement, propName, index) {
     const file = specificImageFiles.value[index];
     if (!file) {
         specificImageError.value[index] = "Pilih gambar untuk diunggah.";
@@ -611,8 +654,7 @@ async function uploadSpecificImage(inputElement, propName, index) { // Ganti 'in
         if (imageUrl) {
             page.value[propName] = imageUrl;
             specificImageSuccessMessage.value[index] = `Gambar berhasil diunggah! Klik Simpan Perubahan.`;
-            // *** PENTING: Perubahan di sini: inputElement.value = '' ***
-            if (inputElement) { // inputElement sudah berupa elemen DOM
+            if (inputElement) {
                 inputElement.value = ''; // Mengosongkan input file secara langsung
             }
             specificImageFiles.value[index] = null; // Hapus file yang dipilih dari state
