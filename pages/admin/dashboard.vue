@@ -4,7 +4,6 @@
     <p class="lead">Selamat Datang kembali, John David! Anda bisa mulai mengelola website Anda dari sini.</p>
 
     <div class="row g-4 mt-4">
-      <!-- Kartu Total Halaman -->
       <div class="col-md-4 col-sm-6 col-12">
         <div class="card text-white bg-primary mb-3">
           <div class="card-body">
@@ -19,37 +18,20 @@
           </div>
         </div>
       </div>
-      <!-- Kartu Manajemen Galeri -->
       <div class="col-md-4 col-sm-6 col-12">
         <div class="card text-white bg-success mb-3">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between">
               <div>
-                <h5 class="card-title">Manajemen Galeri</h5>
-                <p class="card-text fs-4 fw-bold">{{ totalGalleryImages }} Gambar</p>
+                <h5 class="card-title">Total Pengguna</h5>
+                <p class="card-text fs-4 fw-bold">{{ totalUsers }}</p>
               </div>
-              <i class="fas fa-images fa-3x stat-icon"></i>
+              <i class="fas fa-users fa-3x stat-icon"></i>
             </div>
-            <NuxtLink to="/admin/gallery" class="text-white text-decoration-none card-footer-link">Edit Galeri <i class="fas fa-arrow-circle-right ms-2"></i></NuxtLink>
+            <NuxtLink to="/admin/users" class="text-white text-decoration-none card-footer-link">Lihat Pengguna <i class="fas fa-arrow-circle-right ms-2"></i></NuxtLink>
           </div>
         </div>
       </div>
-      <!-- Kartu Edit Info Kontak -->
-      <div class="col-md-4 col-sm-6 col-12">
-        <div class="card text-white bg-warning mb-3"> <!-- Warna yang berbeda untuk kontak -->
-          <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between">
-              <div>
-                <h5 class="card-title">Edit Info Kontak</h5>
-                <p class="card-text fs-4 fw-bold"><i class="fas fa-phone-alt"></i> / <i class="fas fa-envelope"></i></p>
-              </div>
-              <i class="fas fa-address-book fa-3x stat-icon"></i>
-            </div>
-            <NuxtLink to="/admin/edit-kontak" class="text-white text-decoration-none card-footer-link">Edit Detail Kontak <i class="fas fa-arrow-circle-right ms-2"></i></NuxtLink>
-          </div>
-        </div>
-      </div>
-      <!-- Kartu Aktivitas Terakhir (Tetap Ada) -->
       <div class="col-md-4 col-sm-12 col-12">
         <div class="card text-white bg-info mb-3">
           <div class="card-body">
@@ -64,21 +46,6 @@
           </div>
         </div>
       </div>
-      <!-- Hapus Kartu Total Pengguna jika tidak digunakan -->
-      <!-- <div class="col-md-4 col-sm-6 col-12">
-        <div class="card text-white bg-secondary mb-3">
-          <div class="card-body">
-            <div class="d-flex align-items-center justify-content-between">
-              <div>
-                <h5 class="card-title">Total Pengguna</h5>
-                <p class="card-text fs-4 fw-bold">{{ totalUsers }}</p>
-              </div>
-              <i class="fas fa-users fa-3x stat-icon"></i>
-            </div>
-            <NuxtLink to="/admin/users" class="text-white text-decoration-none card-footer-link">Lihat Pengguna <i class="fas fa-arrow-circle-right ms-2"></i></NuxtLink>
-          </div>
-        </div>
-      </div> -->
     </div>
 
     <div class="card mt-4 shadow-sm border-0">
@@ -97,8 +64,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRuntimeConfig } from '#app';
+import { ref } from 'vue';
 
 definePageMeta({
   layout: 'admin',
@@ -106,73 +72,29 @@ definePageMeta({
   title: 'Dashboard'
 });
 
-const totalPages = ref(0); 
-const totalGalleryImages = ref(0); 
-const latestActivity = ref('Memuat...');
-const recentActivities = ref([]);
-const errorMessage = ref(null); // Tambahkan ref untuk errorMessage
+const totalPages = ref(7);
+const totalUsers = ref(125);
+const latestActivity = ref('Halaman Kontak Diperbarui');
+const recentActivities = ref([
+  'Pengguna John Doe memperbarui halaman "Kontak" (2 menit yang lalu)',
+  'Admin John David login ke dashboard (baru saja)',
+  'Produk baru "Tangki Oli Hidrolik" ditambahkan (1 jam yang lalu)',
+  'Gambar galeri baru diunggah (3 jam yang lalu)'
+]);
 
-const config = useRuntimeConfig(); 
-const API_BASE_URL = config.public.apiBase; 
-
-// Fungsi untuk mengambil statistik dari API
-async function fetchStats() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/pages`); 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error('Gagal mengambil data statistik.');
-    }
-    const pagesData = await response.json();
-    
-    totalPages.value = pagesData.length; 
-    
-    // Temukan halaman galeri untuk menghitung gambar
-    const galleryPageData = pagesData.find(p => p.slug === 'galeri');
-    if (galleryPageData && galleryPageData.images) {
-      let imagesArray = galleryPageData.images;
-      if (typeof imagesArray === 'string' && imagesArray.startsWith('[')) {
-        try {
-          imagesArray = JSON.parse(imagesArray);
-        } catch (e) {
-          console.error("Failed to parse gallery images for stats:", e);
-          imagesArray = [];
-        }
-      } else if (!Array.isArray(imagesArray)) {
-          imagesArray = [];
-      }
-      totalGalleryImages.value = imagesArray.length;
-    } else {
-      totalGalleryImages.value = 0;
-    }
-
-    latestActivity.value = 'Data terbaru berhasil dimuat.';
-    recentActivities.value = [
-      'Data dashboard diperbarui.',
-      'Periksa halaman individual untuk aktivitas spesifik.'
-    ];
-
-
-  } catch (e) {
-    console.error('Error fetching dashboard stats:', e);
-    errorMessage.value = 'Gagal memuat statistik dashboard.';
-    totalPages.value = 'N/A';
-    totalGalleryImages.value = 'N/A';
-    latestActivity.value = 'Gagal memuat.';
-    recentActivities.value = ['Gagal memuat aktivitas.'];
-  }
-}
-
-onMounted(fetchStats); 
+// Fungsi untuk mengambil data aktual dari API (placeholder)
+// import { onMounted } from 'vue';
+// onMounted(() => {
+//   // Implementasikan pemanggilan API di sini
+// });
 </script>
 
 <style scoped>
-/* Variabel CSS */
+/* Variabel CSS (opsional, bisa diambil dari file utama jika sudah ada) */
 :root {
   --primary-blue: #0d6efd;
   --success-green: #198754;
   --info-cyan: #0dcaf0;
-  --warning-orange: #ffc107; /* Warna baru untuk kontak */
   --dark-gray: #212529;
   --light-gray: #f8f9fa;
   --text-dark: #343a40;
@@ -185,6 +107,7 @@ onMounted(fetchStats);
 .mb-3 { margin-bottom: 1rem; }
 .mb-4 { margin-bottom: 1.5rem; }
 .mt-4 { margin-top: 1.5rem; }
+.me-3 { margin-right: 1rem; }
 .ms-2 { margin-left: 0.5rem; }
 .d-flex { display: flex; }
 .align-items-center { align-items: center; }
@@ -194,7 +117,7 @@ onMounted(fetchStats);
 .fw-bold { font-weight: 700 !important; }
 .lead { font-size: 1.25rem; font-weight: 300; color: #6c757d; }
 .mb-0 { margin-bottom: 0 !important; }
-.text-white { color: #fff !important; } 
+.text-white { color: #000000 !important; }
 .text-decoration-none { text-decoration: none !important; }
 
 .dashboard-page-title {
@@ -205,37 +128,37 @@ onMounted(fetchStats);
 .row {
   display: flex;
   flex-wrap: wrap;
-  margin-right: -0.75rem; 
-  margin-left: -0.75rem; 
-  margin-top: calc(-1 * 1.5rem); 
+  margin-right: -0.75rem; /* Setengah dari --bs-gutter-x */
+  margin-left: -0.75rem; /* Setengah dari --bs-gutter-x */
+  margin-top: calc(-1 * 1.5rem); /* Mengimbangi gap vertikal jika ada mt-* di child */
 }
 .row > * {
-  padding-right: 0.75rem; 
-  padding-left: 0.75rem; 
+  padding-right: 0.75rem; /* Setengah dari --bs-gutter-x */
+  padding-left: 0.75rem;  /* Setengah dari --bs-gutter-x */
   flex-shrink: 0;
   width: 100%;
   max-width: 100%;
-  margin-top: 1.5rem; 
+  margin-top: 1.5rem; /* Setara dengan g-4 */
 }
 
 /* Grid columns for responsiveness */
-@media (min-width: 768px) { 
+@media (min-width: 768px) { /* Medium devices (md) and up */
   .col-md-4 {
     flex: 0 0 auto;
     width: 33.33333333%;
   }
-  .col-md-6 { 
+  .col-md-6 { /* Jika ada kasus 2 kolom */
     flex: 0 0 auto;
     width: 50%;
   }
 }
-@media (min-width: 576px) { 
+@media (min-width: 576px) { /* Small devices (sm) and up */
   .col-sm-6 {
     flex: 0 0 auto;
     width: 50%;
   }
 }
-.col-12 { 
+.col-12 { /* Default for all screen sizes */
   flex: 0 0 auto;
   width: 100%;
 }
@@ -252,8 +175,8 @@ onMounted(fetchStats);
   border: 1px solid var(--border-light);
   border-radius: 0.375rem;
   box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
-  height: 100%; 
-  overflow: hidden; 
+  height: 100%; /* Agar semua kartu memiliki tinggi yang sama dalam baris */
+  overflow: hidden; /* Penting untuk stretched-link */
 }
 .card-body {
   flex: 1 1 auto;
@@ -273,8 +196,6 @@ onMounted(fetchStats);
 .bg-primary { background-color: var(--primary-blue) !important; }
 .bg-success { background-color: var(--success-green) !important; }
 .bg-info { background-color: var(--info-cyan) !important; }
-.bg-warning { background-color: var(--warning-orange) !important; } /* Warna baru */
-
 
 /* Statistik Icon di dalam kartu */
 .stat-icon {
@@ -288,18 +209,19 @@ onMounted(fetchStats);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem; 
-    background-color: rgba(0,0,0,0.1); 
+    padding: 0.75rem 1rem; /* Padding footer link */
+    background-color: rgba(0,0,0,0.1); /* Sedikit gelap */
     color: rgb(255, 255, 255);
     text-decoration: none;
     font-size: 0.9em;
     transition: background-color 0.2s ease;
-    position: relative; 
-    z-index: 2; 
+    /* Membuat link memenuhi lebar footer kartu */
+    position: relative; /* Penting agar tidak menjadi stretched-link asli */
+    z-index: 2; /* Pastikan di atas konten kartu jika ada stretched-link */
     border-bottom-left-radius: inherit;
     border-bottom-right-radius: inherit;
-    width: 100%; 
-    margin-top: auto; 
+    width: 100%; /* Pastikan mengisi lebar penuh */
+    margin-top: auto; /* Mendorong ke bawah */
 }
 
 .card-footer-link:hover {
