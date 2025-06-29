@@ -4,7 +4,7 @@
       <div class="sidebar-header">
         <!-- Anda bisa menambahkan logo atau teks di sini -->
         <NuxtLink to="/admin/dashboard" class="logo-link">
-          <img src="/static/assets/logo.png" alt="Admin Logo" class="admin-logo" />
+          
           <span class="logo-text">Admin Panel</span>
         </NuxtLink>
       </div>
