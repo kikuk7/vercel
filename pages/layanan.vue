@@ -21,25 +21,22 @@
 
       <div class="service-grid">
         <div class="service-card">
-          <!-- PENTING: Gambar ini sekarang DINAMIS dari database -->
+          <!-- PENTING: src sekarang mengikat ke service_1_image_url dari DB -->
           <img :src="page.service_1_image_url" :alt="page.service_1_title" />
-          <!-- Menggunakan page.service_1_title dan page.service_1_body dari database -->
           <h3>{{ page.service_1_title }}</h3>
           <p>{{ page.service_1_body }}</p>
         </div>
 
         <div class="service-card">
-          <!-- PENTING: Gambar ini sekarang DINAMIS dari database -->
+          <!-- PENTING: src sekarang mengikat ke service_2_image_url dari DB -->
           <img :src="page.service_2_image_url" :alt="page.service_2_title" />
-          <!-- Menggunakan page.service_2_title dan page.service_2_body dari database -->
           <h3>{{ page.service_2_title }}</h3>
           <p>{{ page.service_2_body }}</p>
         </div>
 
         <div class="service-card">
-          <!-- PENTING: Gambar ini sekarang DINAMIS dari database -->
+          <!-- PENTING: src sekarang mengikat ke service_3_image_url dari DB -->
           <img :src="page.service_3_image_url" :alt="page.service_3_title" />
-          <!-- Menggunakan page.service_3_title dan page.service_3_body dari database -->
           <h3>{{ page.service_3_title }}</h3>
           <p>{{ page.service_3_body }}</p>
         </div>
@@ -49,48 +46,43 @@
 </template>
 
 <script>
-import visitorStats from '~/mixins/visitorStats'; // Import the mixin
-import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
+import visitorStats from '~/mixins/visitorStats'; 
+import { useRuntimeConfig } from '#app'; 
 
 export default {
   name: 'LayananPage',
-  mixins: [visitorStats], // Use the mixin for visitor stats
+  mixins: [visitorStats], 
   data() {
     return {
-      // Inisialisasi properti 'page' dengan nilai default/placeholder
       page: {
         title: 'Memuat Layanan...',
-        hero_image_url: '/static/assets/layanan2.jpg', // Default jika DB kosong
+        hero_image_url: '', // Akan diisi dari DB
         main_intro_body: 'Memuat konten layanan...',
         service_1_title: 'Memuat...',
         service_1_body: 'Memuat...',
-        service_1_image_url: '', // Sekarang akan diisi dari DB
+        service_1_image_url: '', 
         service_2_title: 'Memuat...',
         service_2_body: 'Memuat...',
-        service_2_image_url: '', // Sekarang akan diisi dari DB
+        service_2_image_url: '', 
         service_3_title: 'Memuat...',
         service_3_body: 'Memuat...',
-        service_3_image_url: ''  // Sekarang akan diisi dari DB
+        service_3_image_url: ''  
       }
     };
   },
-  async mounted() { // Ubah mounted menjadi async
-    const config = useRuntimeConfig(); // Ambil runtime config
-    const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+  async mounted() { 
+    const config = useRuntimeConfig(); 
+    const API_BASE_URL = config.public.apiBase; 
 
-    // Panggil fungsi untuk mengambil data halaman 'layanan' dari API
     await this.fetchPageData('layanan', API_BASE_URL); 
-    
-    // Panggil updateStats dari mixin
     this.updateStats(); 
-    // Set up interval untuk update stats
     this.intervalId = setInterval(this.updateStats, 30000); 
   },
   beforeDestroy() {
     clearInterval(this.intervalId); 
   },
   methods: {
-    async fetchPageData(slug, apiBaseUrl) { // Terima apiBaseUrl sebagai argumen
+    async fetchPageData(slug, apiBaseUrl) { 
       try {
         const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
         if (!response.ok) {
@@ -101,7 +93,6 @@ export default {
         this.page = data; 
       } catch (error) {
         console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
-        // Fallback data jika terjadi error
         this.page.title = 'Layanan Tidak Tersedia';
         this.page.main_intro_body = 'Terjadi kesalahan saat memuat layanan.';
         this.page.service_1_title = 'Error';
@@ -129,9 +120,9 @@ export default {
 /* Gaya untuk service-card images agar konsisten */
 .service-card img {
   width: 100%;
-  height: 150px; /* Tinggi seragam untuk gambar kartu */
-  object-fit: cover; /* Memastikan gambar mengisi ruang */
-  border-radius: 8px; /* Sudut membulat */
-  margin-bottom: 15px; /* Jarak dari teks */
+  height: 150px; 
+  object-fit: cover; 
+  border-radius: 8px; 
+  margin-bottom: 15px; 
 }
 </style>
