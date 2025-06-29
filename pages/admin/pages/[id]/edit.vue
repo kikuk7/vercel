@@ -31,41 +31,56 @@
             <small class="form-text text-muted">Judul utama di bagian atas halaman beranda.</small>
           </div>
           
+          <!-- URL Video Hero -->
           <div class="mb-3">
-            <label for="hero_video_source_type" class="form-label">Tipe Sumber Video Hero</label>
-            <select class="form-control" id="hero_video_source_type" v-model="page.hero_video_source_type">
-              <option value="mp4">File MP4 Lokal/URL Langsung</option>
-              <option value="youtube">YouTube URL</option>
-              <option value="drive">Google Drive Video URL</option>
-              <option value="">Tidak Ada Video</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="hero_video_url" class="form-label">URL Video Hero</label>
+            <label for="hero_video_url" class="form-label">URL Video Hero (MP4/YouTube/Drive)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (untuk MP4), 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' (untuk YouTube), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Video)</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (MP4), 'https://youtube.com/watch?v=ID' (YouTube), 'https://drive.google.com/file/d/ID/view' (Drive)</small>
+            
+            <!-- Pratinjau Video Hero -->
+            <div v-if="page.hero_video_url" class="hero-video-preview-wrapper mt-3">
+                <template v-if="getMediaType(page.hero_video_url) === 'youtube'">
+                    <iframe 
+                      :src="`https://www.youtube.com/embed/${getYoutubeVideoId(page.hero_video_url)}?autoplay=0&mute=0&controls=1`" 
+                      frameborder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen 
+                      class="hero-media-preview">
+                    </iframe>
+                </template>
+                <template v-else-if="getMediaType(page.hero_video_url) === 'drive'">
+                    <iframe 
+                      :src="`https://drive.google.com/file/d/${getDriveFileId(page.hero_video_url)}/preview`" 
+                      frameborder="0" 
+                      allow="autoplay; encrypted-media; gyroscope; picture-in-picture" 
+                      allowfullscreen 
+                      class="hero-media-preview">
+                    </iframe>
+                </template>
+                <video controls v-else-if="getMediaType(page.hero_video_url) === 'mp4'" :src="page.hero_video_url" class="hero-media-preview"></video>
+                <p v-else class="text-muted">Pratinjau tidak tersedia untuk tipe ini atau URL tidak valid.</p>
+                <button type="button" @click="removeHeroVideo" class="btn btn-danger btn-sm hero-media-remove-btn mt-2">Hapus Video Hero</button>
+            </div>
           </div>
 
+          <!-- URL Gambar Hero -->
           <div class="mb-3">
-            <label for="hero_image_source_type" class="form-label">Tipe Sumber Gambar Hero</label>
-            <select class="form-control" id="hero_image_source_type" v-model="page.hero_image_source_type">
-              <option value="static">File Gambar Lokal/Static</option>
-              <option value="external">URL Gambar Eksternal (JPG/PNG)</option>
-              <option value="drive">Google Drive Gambar URL</option>
-              <option value="">Tidak Ada Gambar</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="hero_image_url" class="form-label">URL Gambar Hero</label>
+            <label for="hero_image_url" class="form-label">URL Gambar Hero (File/Eksternal/Drive)</label>
             <input type="text" class="form-control" id="hero_image_url" v-model="page.hero_image_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (untuk Static), 'https://example.com/image.jpg' (untuk Eksternal), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Gambar)</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (Static), 'https://example.com/image.jpg' (Eksternal), 'https://drive.google.com/uc?id=FILE_ID' (Drive)</small>
             
-            <!-- Tambahan: Input file untuk upload gambar hero -->
+            <!-- Input file untuk upload gambar hero -->
             <input type="file" ref="heroImageInput" @change="handleHeroImageSelect" class="form-control mt-2 mb-2" accept="image/*">
             <button type="button" @click="uploadHeroImage" class="btn btn-info btn-sm">Unggah Gambar Hero Baru</button>
             <span v-if="uploadingHeroImage" class="ms-2 text-muted">Mengunggah...</span>
             <p v-if="heroUploadError" class="text-danger mt-1">{{ heroUploadError }}</p>
             <p v-if="heroUploadSuccessMessage" class="text-success mt-1">{{ heroUploadSuccessMessage }}</p>
+
+            <!-- Pratinjau Gambar Hero Saat Ini dan Tombol Hapus -->
+            <div v-if="page.hero_image_url" class="hero-image-preview-wrapper mt-3">
+              <img :src="page.hero_image_url" alt="Pratinjau Gambar Hero" class="img-thumbnail hero-image-preview">
+              <button type="button" @click="removeHeroImage" class="btn btn-danger btn-sm hero-image-remove-btn">Hapus Gambar Hero</button>
+            </div>
           </div>
 
           <hr>
@@ -145,85 +160,13 @@
           </div>
 
           <hr>
-          <div v-if="page.slug === 'galeri'">
-            <h4 class="mb-3">Konten Spesifik Halaman Galeri</h4>
-            <div class="mb-3">
-              <label for="gallery_intro_body" class="form-label">Paragraf Pembuka Galeri</label>
-              <textarea class="form-control" id="gallery_intro_body" v-model="page.gallery_intro_body" rows="5"></textarea>
-              <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
-            </div>
-            
-            <!-- Bagian untuk Upload dan Kelola Gambar Galeri -->
-            <div class="mb-3">
-              <label class="form-label">Manajemen Gambar Galeri</label>
-              <input type="file" ref="galleryImageInput" @change="handleGalleryImageSelect" class="form-control mb-2" accept="image/*">
-              <button type="button" @click="uploadGalleryImage" class="btn btn-info btn-sm">Unggah Gambar Baru</button>
-              <span v-if="uploadingImage" class="ms-2 text-muted">Mengunggah...</span>
-              <p v-if="uploadError" class="text-danger mt-1">{{ uploadError }}</p>
-              <p v-if="uploadSuccessMessage" class="text-success mt-1">{{ uploadSuccessMessage }}</p>
-
-              <div class="mt-3 image-thumbnail-grid">
-                <div v-for="(imgUrl, idx) in page.images" :key="idx" class="image-thumbnail-item card">
-                  <img :src="imgUrl" class="img-thumbnail" alt="Galeri">
-                  <div class="image-thumbnail-overlay">
-                    <button type="button" @click="removeGalleryImage(idx)" class="btn btn-danger btn-sm">Hapus</button>
-                  </div>
-                  <small class="text-muted text-truncate w-100 mt-1">{{ imgUrl }}</small>
-                </div>
-                <p v-if="page.images.length === 0" class="text-muted mt-2">Belum ada gambar di galeri ini.</p>
-              </div>
-            </div>
-          </div>
+          <!-- Perbaikan: Bagian Galeri telah dipindahkan ke /admin/gallery -->
+          <!-- Hapus bagian ini jika sudah dipindahkan sepenuhnya dan tidak ingin ada duplikasi -->
+          <!-- Bagian ini sudah dihapus di sini karena ada halaman manajemen galeri terpisah -->
 
           <hr>
-          <div v-if="page.slug === 'kontak'">
-            <h4 class="mb-3">Konten Spesifik Halaman Kontak Kami</h4>
-            <div class="mb-3">
-              <label for="contact_overlay_text" class="form-label">Teks Overlay Hero</label>
-              <input type="text" class="form-control" id="contact_overlay_text" v-model="page.contact_overlay_text">
-              <div v-if="validationErrors.contact_overlay_text" class="text-danger mt-1">{{ validationErrors.contact_overlay_text[0] }}</div>
-              <small class="form-text text-muted">Teks singkat di atas gambar hero halaman Kontak.</small>
-            </div>
-            <div class="mb-3">
-              <label for="contact_title" class="form-label">Judul Utama Kontak</label>
-              <input type="text" class="form-control" id="contact_title" v-model="page.contact_title">
-              <div v-if="validationErrors.contact_title" class="text-danger mt-1">{{ validationErrors.contact_title[0] }}</div>
-            </div>
-            <h5 class="mt-4">Info Kontak (Telepon)</h5>
-            <div class="mb-3">
-              <label for="contact_phone" class="form-label">Nomor Telepon</label>
-              <input type="text" class="form-control" id="contact_phone" v-model="page.contact_phone">
-              <div v-if="validationErrors.contact_phone" class="text-danger mt-1">{{ validationErrors.contact_phone[0] }}</div>
-            </div>
-            <h5 class="mt-4">Info Kontak (Lokasi)</h5>
-            <div class="mb-3">
-              <label for="contact_location_title" class="form-label">Judul Lokasi</label>
-              <input type="text" class="form-control" id="contact_location_title" v-model="page.contact_location_title">
-              <div v-if="validationErrors.contact_location_title" class="text-danger mt-1">{{ validationErrors.contact_location_title[0] }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="contact_location_body" class="form-label">Alamat Lengkap</label>
-              <textarea class="form-control" id="contact_location_body" v-model="page.contact_location_body" rows="3"></textarea>
-              <div v-if="validationErrors.contact_location_body" class="text-danger mt-1">{{ validationErrors.contact_location_body[0] }}</div>
-            </div>
-            <h5 class="mt-4">Info Kontak (Email)</h5>
-            <div class="mb-3">
-              <label for="contact_email_title" class="form-label">Judul Email</label>
-              <input type="text" class="form-control" id="contact_email_title" v-model="page.contact_email_title">
-              <div v-if="validationErrors.contact_email_title" class="text-danger mt-1">{{ validationErrors.contact_email_title[0] }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="contact_email_address" class="form-label">Alamat Email</label>
-              <input type="email" class="form-control" id="contact_email_address" v-model="page.contact_email_address">
-              <div v-if="validationErrors.contact_email_address" class="text-danger mt-1">{{ validationErrors.contact_email_address[0] }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="contact_whatsapp_number" class="form-label">Nomor WhatsApp (untuk Tombol)</label>
-              <input type="text" class="form-control" id="contact_whatsapp_number" v-model="page.contact_whatsapp_number">
-              <div v-if="validationErrors.contact_whatsapp_number" class="text-danger mt-1">{{ validationErrors.contact_whatsapp_number[0] }}</div>
-              <small class="form-text text-muted">Contoh: +6287812345678 (gunakan format internasional).</small>
-            </div>
-          </div>
+          <!-- Perbaikan: Bagian Kontak dipindahkan ke /admin/edit-kontak, dihapus dari sini -->
+          <!-- Bagian ini sudah dihapus di sini karena ada halaman edit kontak terpisah -->
 
           <hr>
           <div v-if="page.slug === 'faq'">
@@ -243,7 +186,7 @@
               <div class="mb-3">
                 <label :for="`faq_${i}_answer`" class="form-label">Jawaban {{ i }}</label>
                 <textarea class="form-control" :id="`faq_${i}_answer`" v-model="page[`faq_${i}_answer`]" rows="3"></textarea>
-                <div v-if="validationErrors[`faq_${i}_answer`]" class="text-danger mt-1">{{ validationErrors.faq_answer[0] }}</div>
+                <div v-if="validationErrors[`faq_${i}_answer`]" class="text-danger mt-1">{{ validationErrors[`faq_${i}_answer`][0] }}</div>
               </div>
             </template>
           </div>
@@ -281,11 +224,11 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
-const galleryImageInput = ref(null); // Ref untuk input file
+const galleryImageInput = ref(null); 
 const uploadingImage = ref(false);
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
-const heroImageInput = ref(null); // Ref untuk input file gambar hero
+const heroImageInput = ref(null); 
 const uploadingHeroImage = ref(false);
 const heroUploadError = ref(null);
 const heroUploadSuccessMessage = ref(null);
@@ -317,12 +260,12 @@ async function fetchPage(idOrSlug) {
     if (typeof page.value.images === 'string' && page.value.images.startsWith('[')) {
       try {
         page.value.images = JSON.parse(page.value.images);
-      } catch (e) {
-        console.error("Failed to parse images JSON for edit form:", e);
-        page.value.images = []; // Fallback to empty array
+      } catch (e) { // Fixed to use 'e' from this specific catch block
+        console.error("Failed to parse images JSON for edit form:", e); 
+        page.value.images = []; 
       }
     } else if (!Array.isArray(page.value.images)) {
-        page.value.images = []; // Ensure it's an array for consistency
+        page.value.images = []; 
     }
 
   } catch (e) {
@@ -331,26 +274,57 @@ async function fetchPage(idOrSlug) {
   }
 }
 
+// Fungsi untuk menentukan tipe media berdasarkan URL
+const getMediaType = (url) => {
+    if (!url) return '';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+    if (url.includes('drive.google.com') && url.includes('file/d/')) return 'drive';
+    if (url.match(/\.(mp4|webm|ogg)$/i)) return 'mp4';
+    return 'static'; // Default to static for local/direct image files
+};
+
+// Fungsi helper untuk mendapatkan ID YouTube dari URL
+const getYoutubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2] && match[2].length === 11) ? match[2] : null;
+};
+
+// Fungsi helper untuk mendapatkan ID File Google Drive dari URL
+const getDriveFileId = (url) => {
+    if (!url) return null;
+    const regExp = /(https?:\/\/drive\.google\.com\/file\/d\/|https?:\/\/drive\.google\.com\/open\?id=)([^#\&\?\/]+)/;
+    const match = url.match(regExp);
+    return (match && match[2]) ? match[2] : null;
+};
+
 async function updatePage() {
   successMessage.value = null;
   errorMessage.value = null;
   validationErrors.value = {};
 
   try {
-    // Perbaikan: Konversi array images kembali menjadi string JSON sebelum dikirim ke backend
     const pageDataToSend = { ...page.value };
+
+    // Konversi array images kembali menjadi string JSON sebelum dikirim ke backend
     if (Array.isArray(pageDataToSend.images)) {
         pageDataToSend.images = JSON.stringify(pageDataToSend.images);
     } else {
-        pageDataToSend.images = '[]'; // Pastikan string JSON kosong jika tidak ada array
+        pageDataToSend.images = '[]'; 
     }
+    
+    // Inisialisasi atau infer hero_video_source_type dan hero_image_source_type
+    // Berdasarkan URL yang ada di input fields
+    pageDataToSend.hero_video_source_type = getMediaType(pageDataToSend.hero_video_url) || null;
+    pageDataToSend.hero_image_source_type = getMediaType(pageDataToSend.hero_image_url) || 'static'; // Default ke static jika tidak ada URL gambar atau tidak dikenali sebagai video/drive
 
     const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, { 
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(pageDataToSend) // Kirim objek yang sudah diolah
+      body: JSON.stringify(pageDataToSend) 
     });
 
     if (!response.ok) {
@@ -373,71 +347,73 @@ async function updatePage() {
   }
 }
 
-// === Metode untuk Upload Gambar Galeri ===
+// === Metode untuk Upload Gambar Galeri (TETAP DI SINI UNTUK GALERI SLUG) ===
+// Ini akan muncul jika page.slug === 'galeri' seperti di template
 function handleGalleryImageSelect(event) {
-  const file = event.target.files[0];
-  if (file) {
-    uploadError.value = null;
-    uploadSuccessMessage.value = null;
-  }
+  const file = event.target.files[0];
+  if (file) {
+    uploadError.value = null;
+    uploadSuccessMessage.value = null;
+  }
 }
 
 async function uploadGalleryImage() {
-  const file = galleryImageInput.value.files[0];
-  if (!file) {
-    uploadError.value = "Pilih gambar untuk diunggah.";
-    return;
-  }
+  const file = galleryImageInput.value.files[0];
+  if (!file) {
+    uploadError.value = "Pilih gambar untuk diunggah.";
+    return;
+  }
 
-  uploadingImage.value = true;
-  uploadError.value = null;
-  uploadSuccessMessage.value = null;
+  uploadingImage.value = true;
+  uploadError.value = null;
+  uploadSuccessMessage.value = null;
 
-  const formData = new FormData();
-  formData.append('image', file); 
+  const formData = new FormData();
+  formData.append('image', file); 
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
-      method: 'POST',
-      body: formData 
-    });
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+      method: 'POST',
+      body: formData 
+    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Gagal mengunggah gambar.');
-    }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengunggah gambar.');
+    }
 
-    const result = await response.json();
-    const imageUrl = result.publicUrl; 
+    const result = await response.json();
+    const imageUrl = result.publicUrl; 
 
-    if (imageUrl) {
-      if (!Array.isArray(page.value.images)) {
-        page.value.images = [];
-      }
-      page.value.images.push(imageUrl);
-      uploadSuccessMessage.value = 'Gambar berhasil diunggah!';
-      galleryImageInput.value.value = '';
-    } else {
-      throw new Error('URL gambar tidak diterima dari server.');
-    }
+    if (imageUrl) {
+      if (!Array.isArray(page.value.images)) {
+        page.value.images = [];
+      }
+      page.value.images.push(imageUrl);
+      uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
+      galleryImageInput.value.value = '';
+    } else {
+      throw new Error('URL gambar tidak diterima dari server.');
+    }
 
-  } catch (e) {
-    uploadError.value = e.message;
-    console.error('Upload image error:', e);
-  } finally {
-    uploadingImage.value = false;
+  } catch (e) {
+    uploadError.value = e.message;
+    console.error('Upload image error:', e);
+  } finally {
+    uploadingImage.value = false;
   }
 }
 
 function removeGalleryImage(index) {
-  if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
-    page.value.images.splice(index, 1);
-    successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
-    setTimeout(() => successMessage.value = null, 3000);
-  }
+  if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
+    page.value.images.splice(index, 1);
+    successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
+    setTimeout(() => successMessage.value = null, 3000);
+  }
 }
 
-// === Metode Baru untuk Upload Gambar Hero ===
+
+// === Metode untuk Upload Gambar Hero ===
 function handleHeroImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
@@ -476,8 +452,8 @@ async function uploadHeroImage() {
 
     if (imageUrl) {
       page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
-      page.value.hero_image_source_type = 'external'; // Asumsi gambar diunggah ke eksternal
-      heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah!';
+      // Tipe sumber akan disimpulkan di updatePage
+      heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah! Klik Simpan Perubahan untuk menyimpan.';
       heroImageInput.value.value = ''; // Reset input file
     } else {
       throw new Error('URL gambar hero tidak diterima dari server.');
@@ -491,6 +467,14 @@ async function uploadHeroImage() {
   }
 }
 
+function removeHeroImage() {
+  if (confirm('Apakah Anda yakin ingin menghapus gambar hero? Ini akan menghapus URL dari database.')) {
+    page.value.hero_image_url = null; // Setel ke null atau string kosong
+    page.value.hero_image_source_type = 'static'; // Kembali ke tipe default jika dihapus
+    successMessage.value = 'Gambar hero dihapus. Klik Simpan Perubahan untuk menyimpan ke database.';
+    setTimeout(() => successMessage.value = null, 3000);
+  }
+}
 </script>
 
 <style scoped>
@@ -523,6 +507,38 @@ hr {
     height: 1px;
 }
 
+/* Gaya untuk pratinjau media hero */
+.hero-video-preview-wrapper, .hero-image-preview-wrapper {
+  max-width: 300px; /* Batasi lebar pratinjau */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 15px;
+  position: relative;
+  background-color: #f0f0f0;
+}
+
+.hero-media-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain; /* Jaga aspek rasio */
+}
+
+.hero-image-preview {
+  max-height: 200px; /* Batasi tinggi pratinjau gambar */
+}
+
+.hero-media-remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+  font-size: 0.7em;
+  padding: 5px 8px;
+}
+
+/* Gaya untuk grid thumbnail galeri */
 .image-thumbnail-grid {
   display: flex;
   flex-wrap: wrap;
@@ -531,8 +547,8 @@ hr {
 }
 
 .image-thumbnail-item {
-  width: 100px; /* Lebar thumbnail */
-  height: 100px; /* Tinggi thumbnail */
+  width: 100px; 
+  height: 100px; 
   overflow: hidden;
   position: relative;
   border-radius: 8px;
@@ -546,8 +562,8 @@ hr {
 
 .image-thumbnail-item img {
   max-width: 100%;
-  max-height: 80px; /* Batasi tinggi gambar agar tombol hapus terlihat */
-  object-fit: contain; /* Jaga aspek rasio */
+  max-height: 80px; 
+  object-fit: contain; 
   border-radius: 4px;
 }
 
