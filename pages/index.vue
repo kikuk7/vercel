@@ -33,9 +33,9 @@
 
       <div class="bottom-section">
         <div class="image-content">
-          <img src="/static/assets/Foto Galeri/DSCF5421.jpg" alt="layanan2" class="img-small" />
-          <img src="/static/assets/DSCF5375.jpg" alt="layanan1" class="img-large" />
-          <img src="/static/assets/DSCF5385.jpg" alt="layanan3" class="img-small" />
+          <img src="/assets/Foto Galeri/DSCF5421.jpg" alt="layanan2" class="img-small" />
+          <img src="/assets/DSCF5375.jpg" alt="layanan1" class="img-large" />
+          <img src="/assets/DSCF5385.jpg" alt="layanan3" class="img-small" />
         </div>
       </div>
     </section>
