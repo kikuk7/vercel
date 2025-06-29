@@ -193,7 +193,7 @@
     type="file"
     class="form-control mt-2 mb-2"
     accept="image/*"
-    const serviceImageInputs = ref([3]); 
+    const serviceImageInputs = ref(Array(3).fill(null));
     :ref="el => serviceImageInputs.value[i - 1] = el"
     @change="event => handleSpecificImageSelect(event, `service_${i}_image_url`, 6 + (i - 1))"
   />
