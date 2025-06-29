@@ -18,10 +18,10 @@
       </div>
       <div class="pengunjung-info">
         <h3>Pengunjung</h3>
-        <!-- ID ini kemungkinan dari mixin visitorStats, perlu dihubungkan dengan data Vue -->
-        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Online User Icon" class="visitor-icon"> Pengguna Online: <span id="online-user">Memuat...</span></p>
-        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Visitor Today Icon" class="visitor-icon"> Pengunjung Hari Ini: <span id="today-visitor">Memuat...</span></p>
-        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Total Visitor Icon" class="visitor-icon"> Total Pengunjung: <span id="total-visitor">Memuat...</span></p>
+        <!-- PENTING: Sekarang menggunakan binding Vue ke properti data dari mixin -->
+        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Online User Icon" class="visitor-icon"> Pengguna Online: <span>{{ onlineUsers }}</span></p>
+        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Visitor Today Icon" class="visitor-icon"> Pengunjung Hari Ini: <span>{{ todayVisitors }}</span></p>
+        <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Total Visitor Icon" class="visitor-icon"> Total Pengunjung: <span>{{ totalVisitors }}</span></p>
       </div>
     </div>
 

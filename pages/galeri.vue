@@ -98,7 +98,7 @@ export default {
   margin-bottom: 10px;
   font-size: 2.5em; /* Ukuran judul yang sedikit lebih besar */
   color: #333;
-  margin-top: 50px; /* Margin atas untuk judul */
+  margin-top: 100px; /* Margin atas untuk judul */
 }
 
 .galeri-description {
