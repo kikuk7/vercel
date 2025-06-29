@@ -12,7 +12,7 @@
       <div class="user-profile">
         <img src="/assets/1.png" alt="John David" class="profile-pic" />
         <div class="user-info">
-          <span class="user-name">John David</span>
+          <span class="user-name">Admin</span>
           <span class="user-status online">Online</span>
         </div>
       </div>
