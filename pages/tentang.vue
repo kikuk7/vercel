@@ -4,7 +4,7 @@
       <div class="container">
         <div class="hero-image-wrapper">
           <!-- Menggunakan page.hero_image_url dari database -->
-          <img src="/static/assets/tentang.JPG" alt="Tentang Kami" />
+          <img src="/static/assets/DSCF5376.JPG" alt="Tentang Kami" />
         </div>
       </div>
     </section>

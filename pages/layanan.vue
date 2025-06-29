@@ -4,7 +4,7 @@
       <div class="container">
         <div class="hero-image-wrapper">
           <!-- Menggunakan page.hero_image_url dari database -->
-          <img src="/static/assets/layanan2.jpg" alt="Layanan Hero" />
+          <img src="/static/assets/DSCF5385.jpg" alt="Layanan Hero" />
         </div>
       </div>
     </section>
@@ -22,7 +22,7 @@
       <div class="service-grid">
         <div class="service-card">
           <!-- Menggunakan page.service_1_image_url dari database -->
-          <img src="/static/assets/layanan1.jpg" alt="Jasa Fabrikasi" />
+          <img src="/static/assets/Foto Galeri/DSCF5421.jpg" alt="Jasa Fabrikasi" />
           <!-- Menggunakan page.service_1_title dan page.service_1_body dari database -->
           <h3>{{ page.service_1_title }}</h3>
           <p>{{ page.service_1_body }}</p>
@@ -30,7 +30,7 @@
 
         <div class="service-card">
           <!-- Menggunakan page.service_2_image_url dari database -->
-          <img src="/static/assets/Foto Galeri/3.jpg" alt="Komponen Besi" />
+          <img src="/static/assets/Foto Galeri/DSCF5404.jpg" alt="Komponen Besi" />
           <!-- Menggunakan page.service_2_title dan page.service_2_body dari database -->
           <h3>{{ page.service_2_title }}</h3>
           <p>{{ page.service_2_body }}</p>
@@ -38,7 +38,7 @@
 
         <div class="service-card">
           <!-- Menggunakan page.service_3_image_url dari database -->
-          <img src="/static/assets/Foto Galeri/6.JPG" alt="Pengadaan Barang" />
+          <img src="/static/assets/Foto Galeri/DSCF5389.JPG" alt="Pengadaan Barang" />
           <!-- Menggunakan page.service_3_title dan page.service_3_body dari database -->
           <h3>{{ page.service_3_title }}</h3>
           <p>{{ page.service_3_body }}</p>

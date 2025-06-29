@@ -4,7 +4,7 @@
       <div class="container">
         <div class="hero-image-wrapper">
           <!-- Menggunakan page.hero_image_url dari database -->
-          <img src="/static/assets/layanan2.jpg" alt="Layanan Hero" />
+          <img src="/static/assets/DSCF5363.jpg" alt="Layanan Hero" />
           <!-- Menggunakan contact_overlay_text dari database -->
           <div class="overlay-text">{{ page.contact_overlay_text }}</div>
         </div>
