@@ -47,7 +47,6 @@
 </template>
 
 <script>
-import visitorStats from '~/mixins/visitorStats';
 import { useRuntimeConfig } from '#app'; 
 
 export default {
