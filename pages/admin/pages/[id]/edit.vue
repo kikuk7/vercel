@@ -33,41 +33,22 @@
           
           <!-- URL Video Hero -->
           <div class="mb-3">
-            <label for="hero_video_url" class="form-label">URL Video Hero (MP4/YouTube/Drive)</label>
+            <label for="hero_video_url" class="form-label">URL Video Hero (MP4)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (untuk MP4), 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' (untuk YouTube), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Video)</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4'</small>
             
             <!-- Pratinjau Video Hero -->
             <div v-if="page.hero_video_url" class="hero-media-preview-wrapper mt-3">
-                <template v-if="getMediaType(page.hero_video_url) === 'youtube'">
-                    <iframe 
-                      :src="`https://www.youtube.com/embed/${getYoutubeVideoId(page.hero_video_url)}?autoplay=0&mute=0&controls=1`" 
-                      frameborder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                      allowfullscreen 
-                      class="hero-media-preview">
-                    </iframe>
-                </template>
-                <template v-else-if="getMediaType(page.hero_video_url) === 'drive'">
-                    <iframe 
-                      :src="`https://drive.google.com/file/d/${getDriveFileId(page.hero_video_url)}/preview`" 
-                      frameborder="0" 
-                      allow="autoplay; encrypted-media; gyroscope; picture-in-picture" 
-                      allowfullscreen 
-                      class="hero-media-preview">
-                    </iframe>
-                </template>
-                <video controls v-else-if="getMediaType(page.hero_video_url) === 'mp4'" :src="page.hero_video_url" class="hero-media-preview"></video>
-                <p v-else class="text-muted">Pratinjau tidak tersedia untuk tipe ini atau URL tidak valid.</p>
+                <video controls :src="page.hero_video_url" class="hero-media-preview"></video>
                 <button type="button" @click="removeHeroVideo" class="btn btn-danger btn-sm hero-media-remove-btn mt-2">Hapus Video Hero</button>
             </div>
           </div>
 
           <!-- URL Gambar Hero -->
           <div class="mb-3">
-            <label for="hero_image_url" class="form-label">URL Gambar Hero (File/Eksternal/Drive)</label>
+            <label for="hero_image_url" class="form-label">URL Gambar Hero</label>
             <input type="text" class="form-control" id="hero_image_url" v-model="page.hero_image_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (Static), 'https://example.com/image.jpg' (Eksternal), 'https://drive.google.com/uc?id=FILE_ID' (Drive)</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg'</small>
             
             <!-- Input file untuk upload gambar hero -->
             <input type="file" ref="heroImageInput" @change="handleHeroImageSelect" class="form-control mt-2 mb-2" accept="image/*">
@@ -321,7 +302,6 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
-// Ref untuk input file untuk galeri (jika masih digunakan di sini)
 const galleryImageInput = ref(null); 
 const uploadingImage = ref(false);
 const uploadError = ref(null);
@@ -624,7 +604,6 @@ async function uploadSpecificImage(inputRef, propName, index) {
         if (imageUrl) {
             page.value[propName] = imageUrl; 
             specificImageSuccessMessage.value[index] = `Gambar berhasil diunggah! Klik Simpan Perubahan.`;
-            // PENTING: Cara mereset input file yang benar
             if (inputRef && inputRef.value) { 
                 inputRef.value.value = '';
             }
