@@ -34,7 +34,7 @@
           <div class="mb-3">
             <label for="hero_video_url" class="form-label">URL Video Hero (MP4/YouTube/Drive)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4', 'https://www.youtube.com/watch?v=VIDEO_ID'</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4', 'https://www.youtube.com/watch?v=YOUR_VIDEO_ID', 'https://drive.google.com/file/d/YOUR_FILE_ID/view'</small>
 
             <div v-if="page.hero_video_url" class="hero-media-preview-wrapper mt-3">
                 <video v-if="getMediaType(page.hero_video_url) === 'mp4'" controls :src="page.hero_video_url" class="hero-media-preview"></video>
@@ -46,7 +46,7 @@
                     class="hero-media-preview"
                 ></iframe>
                 <iframe v-else-if="getMediaType(page.hero_video_url) === 'drive'"
-                    :src="`https://www.drive.google.com/file/d/${getDriveFileId(page.hero_video_url)}/preview`"
+                    :src="`https://drive.google.com/file/d/${getDriveFileId(page.hero_video_url)}/preview`"
                     frameborder="0"
                     allow="autoplay"
                     allowfullscreen
@@ -274,39 +274,6 @@
           </div>
 
           <hr>
-          <div v-if="page.slug === 'galeri'">
-            <h4 class="mb-3">Konten Spesifik Halaman Galeri</h4>
-            <div class="mb-3">
-              <label for="gallery_intro_body" class="form-label">Paragraf Pembuka Galeri</label>
-              <textarea class="form-control" id="gallery_intro_body" v-model="page.gallery_intro_body" rows="3"></textarea>
-              <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
-            </div>
-
-            <h5 class="mt-4">Manajemen Gambar Galeri</h5>
-            <div class="mb-3">
-              <label for="galleryImageUpload" class="form-label">Unggah Gambar Baru ke Galeri</label>
-              <input type="file" ref="galleryImageInput" @change="handleGalleryImageSelect" class="form-control mt-2 mb-2" accept="image/*">
-              <button type="button" @click="uploadGalleryImage" class="btn btn-info btn-sm">Unggah Gambar ke Galeri</button>
-              <span v-if="uploadingImage" class="ms-2 text-muted">Mengunggah...</span>
-              <p v-if="uploadError" class="text-danger mt-1">{{ uploadError }}</p>
-              <p v-if="uploadSuccessMessage" class="text-success mt-1">{{ uploadSuccessMessage }}</p>
-              <small class="form-text text-muted">Gambar yang diunggah akan ditambahkan ke daftar galeri di bawah.</small>
-            </div>
-
-            <div v-if="page.images && page.images.length > 0" class="mt-4">
-              <h6>Gambar-gambar di Galeri:</h6>
-              <div class="image-thumbnail-grid">
-                <div v-for="(image, index) in page.images" :key="index" class="image-thumbnail-item">
-                  <img :src="image" alt="Gambar Galeri" class="img-thumbnail">
-                  <div class="image-thumbnail-overlay">
-                    <button type="button" @click="removeGalleryImage(index)" class="btn btn-danger btn-sm">Hapus</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p v-else class="text-muted mt-3">Tidak ada gambar di galeri ini.</p>
-          </div>
-          <hr>
           <div class="mb-3">
             <label for="body" class="form-label">Konten Halaman (Utama)</label>
             <textarea class="form-control" id="body" v-model="page.body" rows="10"></textarea>
@@ -393,7 +360,7 @@ async function fetchPage(idOrSlug) {
 const getMediaType = (url) => {
     if (!url) return '';
     // Perbaikan regex untuk YouTube dan Google Drive
-    if (url.includes('youtube.com/watch?v=') || url.includes('youtu.be/')) return 'youtube';
+    if (url.includes('youtube.com/') || url.includes('youtu.be/')) return 'youtube'; // Lebih umum
     if (url.includes('drive.google.com/file/d/')) return 'drive';
     if (url.match(/\.(mp4|webm|ogg)$/i)) return 'mp4';
     return 'static'; // Default untuk gambar atau URL statis lainnya

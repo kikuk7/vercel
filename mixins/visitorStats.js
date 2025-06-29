@@ -1,63 +1,92 @@
-// ~/mixins/visitorStats.js
-
-const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080/api'; // Menggunakan runtimeConfig
-const STATS_API_ENDPOINT = `${API_BASE_URL}/visitor-stats`; // Contoh endpoint baru untuk stats jika ada
-
+// mixins/visitorStats.js
 export default {
   data() {
     return {
-      onlineUsers: 0,
-      todayVisitors: 0,
-      totalVisitors: 0,
-      intervalId: null
+      intervalId: null,
     };
   },
   methods: {
     async updateStats() {
-      // PENTING: Implementasi ini adalah placeholder.
-      // Anda perlu membuat endpoint API backend nyata (/api/visitor-stats)
-      // yang mengambil data dari tabel visitor_stats di PostgreSQL.
+      const API_KEY = "$2a$10$0YJ5m64rPDKqjTMOPfThP.3asrzy64YvDlFyM/rZAghcghIG7VoBe";
+      const BIN_ID = "684dde4b8960c979a5a9f79f";
+      const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+      const todayKey = 'visited-' + new Date().toISOString().slice(0, 10);
+      let visitorId = sessionStorage.getItem('visitor-id');
+      if (!visitorId) {
+        visitorId = crypto.randomUUID();
+        sessionStorage.setItem('visitor-id', visitorId);
+      }
 
       try {
-        // Contoh: Mengambil data dari backend API Anda (JIKA ANDA MEMILIKI ENDPOINT INI)
-        // const response = await fetch(STATS_API_ENDPOINT);
-        // if (!response.ok) {
-        //   throw new Error(`HTTP error! status: ${response.status}`);
-        // }
-        // const data = await response.json();
-        // this.onlineUsers = data.onlineUsers;
-        // this.todayVisitors = data.todayVisitors;
-        // this.totalVisitors = data.totalVisitors;
+        const res = await fetch(API_URL, {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        const json = await res.json();
+        const stats = json.record || {
+          total_visits: 0,
+          today_visits: 0,
+          visitors: []
+        };
 
-        // UNTUK SAAT INI, KITA HANYA MENGHAPUS LOGIKA JSONBIN DAN MENGISI DENGAN NILAI DEFAULT
-        // ATAU MENGGUNAKAN LOGIKA YANG LEBIH SEDERHANA UNTUK MENCEGAH ERROR.
-        
-        // Logika sementara atau nilai placeholder untuk mencegah error
-        this.onlineUsers = Math.floor(Math.random() * 5) + 1; // Contoh: 1-5 pengguna online
-        this.todayVisitors = Math.floor(Math.random() * 50) + 10; // Contoh: 10-60 pengunjung hari ini
-        this.totalVisitors = Math.floor(Math.random() * 500) + 100; // Contoh: 100-600 total pengunjung
+        const now = new Date();
+        const nowISO = now.toISOString();
+        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
 
-        // Jika Anda ingin statistik yang PERSISTEN, Anda harus membuat API backend baru
-        // dan tabel `visitor_stats` di PostgreSQL untuk mengelolanya.
-        // Bagian JSONbin di sini telah dihapus.
+        if (!localStorage.getItem(todayKey)) {
+          stats.total_visits += 1;
+          stats.today_visits += 1;
+          localStorage.setItem(todayKey, 'true');
+        }
+
+        stats.visitors = (stats.visitors || []).filter(v => v.timestamp > fiveMinutesAgo);
+        const existing = stats.visitors.find(v => v.id === visitorId);
+        if (existing) {
+          existing.timestamp = nowISO;
+        } else {
+          stats.visitors.push({ id: visitorId, timestamp: nowISO });
+        }
+
+        if (process.client) { // Ensure DOM manipulation only happens on the client-side
+          document.getElementById('total-visitor').innerText = stats.total_visits;
+          document.getElementById('today-visitor').innerText = stats.today_visits;
+          document.getElementById('online-user').innerText = stats.visitors.length;
+        }
+
+
+        await fetch(API_URL, {
+          method: 'PUT',
+          headers: {
+            'X-Master-Key': API_KEY,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(stats)
+        });
+
       } catch (error) {
-        console.error("Error updating visitor stats:", error);
-        // Fallback nilai jika gagal mengambil stats
-        this.onlineUsers = 'N/A';
-        this.todayVisitors = 'N/A';
-        this.totalVisitors = 'N/A';
+        console.error('Gagal update statistik:', error);
+        if (process.client) {
+          document.getElementById('total-visitor').innerText = 'Gagal';
+          document.getElementById('today-visitor').innerText = 'Gagal';
+          document.getElementById('online-user').innerText = 'Gagal';
+        }
       }
     }
   },
   mounted() {
-    // Panggil updateStats saat komponen dimuat
-    this.updateStats(); 
-    // Set up interval untuk update stats secara berkala
-    this.intervalId = setInterval(this.updateStats, 30000); // Setiap 30 detik
+    // This is handled in each page component that uses this mixin
   },
   beforeDestroy() {
-    // Bersihkan interval saat komponen dihancurkan
-    clearInterval(this.intervalId); 
+    // This is handled in each page component that uses this mixin
   }
-}
+};
 
+
+const apiKey = import.meta.env.VITE_JSONBIN_API_KEY;
+
+fetch('https://api.jsonbin.io/v3/b/684dde4...', {
+  method: 'GET',
+  headers: {
+    'X-Master-Key': apiKey,
+    'Content-Type': 'application/json'
+  }
+})
