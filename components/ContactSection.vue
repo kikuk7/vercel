@@ -3,15 +3,15 @@
     <div class="container contact-grid">
       <div class="kontak-info">
         <h3>Kontak</h3>
-        <p class="contact-item"><img src="/static/assets/icon/email 1.png" alt="Email Icon" class="contact-icon"> sumberalam423@gmail.com</p>
-        <p class="contact-item"><img src="/static/assets/icon/telepon.png" alt="Phone Icon" class="contact-icon"> +6287801319313</p>
-        <p class="contact-item"><img src="/static/assets/icon/WA.png" alt="Fax Icon" class="contact-icon"> +6287801319313</p>
+        <p class="contact-item"><img src="/static/assets/icon/email 1.png" alt="Email Icon" class="contact-icon"> {{ page.contact_email_address }}</p>
+        <p class="contact-item"><img src="/static/assets/icon/telepon.png" alt="Phone Icon" class="contact-icon"> {{ page.contact_phone }}</p>
+        <p class="contact-item"><img src="/static/assets/icon/WA.png" alt="WhatsApp Icon" class="contact-icon"> {{ page.contact_whatsapp_number }}</p>
       </div>
       <div class="lokasi-info">
-        <h3>Lokasi</h3>
-        <p>Jl. Projosumarto II, Bengledukuh, Bengle, Kec. Talang, Kabupaten Tegal, Jawa Tengah 52193</p>
+        <h3>{{ page.contact_location_title }}</h3>
+        <p>{{ page.contact_location_body }}</p>
         <!-- Tombol yang akan disembunyikan secara kondisional -->
-        <a :href="`https://wa.me/+6287801319313`" 
+        <a :href="`https://wa.me/${page.contact_whatsapp_number}`" 
            :class="['btn-primary', 'contact-section-btn', { 'hidden-on-specific-pages': shouldHideButton }]">
           <img src="/static/assets/icon/WA.png" alt="WhatsApp Icon" class="btn-icon-img"> hubungi kami
         </a>
@@ -35,12 +35,23 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'; // Impor computed
-import { useRoute } from '#app'; 
+import { ref, computed, onMounted } from 'vue'; // Impor ref, computed, onMounted
+import { useRoute } from '#app'; // Impor useRoute
+import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
-const route = useRoute(); 
+const route = useRoute(); // Inisialisasi useRoute
+const config = useRuntimeConfig(); // Inisialisasi useRuntimeConfig
+const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
 
-// Gunakan computed() untuk reaktivitas yang lebih eksplisit
+const page = ref({ // Objek 'page' akan menyimpan data kontak dari DB
+  contact_email_address: 'Memuat...',
+  contact_phone: 'Memuat...',
+  contact_whatsapp_number: 'Memuat...',
+  contact_location_title: 'Memuat...',
+  contact_location_body: 'Memuat...'
+});
+
+// Computed property untuk menentukan apakah tombol harus disembunyikan
 const shouldHideButton = computed(() => {
   const currentPath = route.path; 
   const pagesToHideButton = [
@@ -49,6 +60,29 @@ const shouldHideButton = computed(() => {
   ];
   return pagesToHideButton.includes(currentPath);
 });
+
+// Fungsi untuk memuat data halaman 'kontak'
+async function fetchContactPageData() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pages/kontak`); // Ambil data halaman 'kontak'
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
+    }
+    const data = await response.json();
+    page.value = data; // Pasangkan data ke properti 'page'
+  } catch (error) {
+    console.error(`Gagal mengambil data halaman 'kontak' dari API:`, error);
+    // Fallback data jika gagal mengambil dari API
+    page.value.contact_email_address = 'Error Memuat';
+    page.value.contact_phone = 'Error Memuat';
+    page.value.contact_whatsapp_number = '';
+    page.value.contact_location_title = 'Error Memuat';
+    page.value.contact_location_body = 'Error Memuat';
+  }
+}
+
+onMounted(fetchContactPageData); // Panggil saat komponen dimuat
 </script>
 
 <style>
