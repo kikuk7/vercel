@@ -4,7 +4,7 @@
       <div class="container">
         <div class="hero-image-wrapper">
           <!-- Menggunakan page.hero_image_url dari database -->
-          <img src="/static/assets/layanan2.jpg" alt="Layanan Hero" />
+          <img :src="page.hero_image_url" :alt="page.title" class="hero-image-fallback" />
           <!-- Menggunakan contact_overlay_text dari database -->
           <div class="overlay-text">{{ page.contact_overlay_text }}</div>
         </div>
@@ -17,19 +17,19 @@
       <div class="info-boxes">
         <div class="info-card">
           <div class="icon"><img src="/static/assets/icon/telp 2.png" alt="Ikon Telepon"></div>
-          <!-- Menggunakan contact_phone dari database -->
           <h3>Telepon</h3>
+          <!-- PENTING: Menggunakan page.contact_phone dari database -->
           <p>{{ page.contact_phone }}</p>
         </div>
         <div class="info-card">
           <div class="icon"><img src="/static/assets/icon/home.png" alt="Ikon Lokasi"></div>
-          <!-- Menggunakan contact_location_title dan contact_location_body dari database -->
+          <!-- PENTING: Menggunakan page.contact_location_title dan page.contact_location_body dari database -->
           <h3>{{ page.contact_location_title }}</h3>
           <p>{{ page.contact_location_body }}</p>
         </div>
         <div class="info-card">
           <div class="icon"><img src="/static/assets/icon/email 2.png" alt="Ikon Email"></div>
-          <!-- Menggunakan contact_email_title dan contact_email_address dari database -->
+          <!-- PENTING: Menggunakan page.contact_email_title dan page.contact_email_address dari database -->
           <h3>{{ page.contact_email_title }}</h3>
           <p>{{ page.contact_email_address }}</p>
         </div>
@@ -50,7 +50,7 @@ import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
 export default {
   name: 'KontakPage',
-  mixins: [visitorStats],
+  mixins: [visitorStats], // Use the mixin for visitor stats
   data() {
     return {
       // Inisialisasi properti 'page' dengan nilai default/placeholder
@@ -73,8 +73,8 @@ export default {
 
     // Panggil API untuk mendapatkan data halaman 'kontak'
     await this.fetchPageData('kontak', API_BASE_URL);
-    this.updateStats();
-    this.intervalId = setInterval(this.updateStats, 30000);
+    this.updateStats(); // Panggil updateStats dari mixin
+    this.intervalId = setInterval(this.updateStats, 30000); // Set up interval
   },
   beforeDestroy() {
     clearInterval(this.intervalId);
@@ -92,6 +92,7 @@ export default {
       } catch (error) {
         console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
         // Fallback data jika gagal mengambil dari API
+        this.page.hero_image_url = '/static/assets/Foto Galeri/1.jpg'; // Default fallback
         this.page.contact_overlay_text = 'Gagal Memuat';
         this.page.contact_title = 'Hubungi Kami (Offline)';
         this.page.contact_phone = 'N/A';
