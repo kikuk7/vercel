@@ -310,29 +310,14 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
-// Ref untuk input file untuk galeri (jika masih digunakan di sini)
 const galleryImageInput = ref(null); 
 const uploadingImage = ref(false);
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
-// Ref untuk input file gambar hero
 const heroImageInput = ref(null); 
 const uploadingHeroImage = ref(false);
 const heroUploadError = ref(null);
 const heroUploadSuccessMessage = ref(null);
-
-// Ref dan state untuk gambar-gambar spesifik lainnya (bottom_images, excellence_images, service_images)
-// Ini adalah array ref untuk mereferensikan input file
-const homepageBottomImageInputs = ref([]);
-const excellenceImageInputs = ref([]);
-const serviceImageInputs = ref([]);
-
-// Array untuk menyimpan status dan pesan spesifik per gambar
-// Indeks: 0-2 untuk homepage_bottom, 3-5 untuk excellence, 6-8 untuk service images
-const specificImageUploading = ref(Array(9).fill(false)); 
-const specificImageError = ref(Array(9).fill(null));     
-const specificImageSuccessMessage = ref(Array(9).fill(null)); 
-const specificImageFiles = ref(Array(9).fill(null)); // Untuk menyimpan objek File yang dipilih
 
 
 const config = useRuntimeConfig(); 
@@ -357,7 +342,7 @@ async function fetchPage(idOrSlug) {
     }
     page.value = await response.json(); 
     
-    // Perbaikan: Parse images JSONB dari string jika perlu (untuk galeri)
+    // Perbaikan: Parse images JSONB dari string jika perlu
     if (typeof page.value.images === 'string' && page.value.images.startsWith('[')) {
       try {
         page.value.images = JSON.parse(page.value.images);
@@ -448,8 +433,7 @@ async function updatePage() {
   }
 }
 
-// === Metode untuk Upload Gambar Galeri (TETAP DI SINI UNTUK GALERI SLUG) ===
-// Ini akan muncul jika page.slug === 'galeri' seperti di template
+// === Metode untuk Upload Gambar Galeri ===
 function handleGalleryImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
@@ -492,7 +476,9 @@ async function uploadGalleryImage() {
       }
       page.value.images.push(imageUrl);
       uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
-      galleryImageInput.value.value = '';
+      if (galleryImageInput.value) { // PENTING: Cek apakah ref ada sebelum mengakses .value
+        galleryImageInput.value.value = ''; // Reset input file
+      }
     } else {
       throw new Error('URL gambar tidak diterima dari server.');
     }
@@ -553,9 +539,10 @@ async function uploadHeroImage() {
 
     if (imageUrl) {
       page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
-      // Tipe sumber akan disimpulkan di updatePage
       heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah! Klik Simpan Perubahan untuk menyimpan.';
-      heroImageInput.value.value = ''; // Reset input file
+      if (heroImageInput.value) { // PENTING: Cek apakah ref ada sebelum mengakses .value
+        heroImageInput.value.value = ''; // Reset input file
+      }
     } else {
       throw new Error('URL gambar hero tidak diterima dari server.');
     }
@@ -570,25 +557,22 @@ async function uploadHeroImage() {
 
 function removeHeroImage() {
   if (confirm('Apakah Anda yakin ingin menghapus gambar hero? Ini akan menghapus URL dari database.')) {
-    page.value.hero_image_url = null; // Setel ke null atau string kosong
-    page.value.hero_image_source_type = 'static'; // Kembali ke tipe default jika dihapus
+    page.value.hero_image_url = null; 
+    page.value.hero_image_source_type = 'static'; 
     successMessage.value = 'Gambar hero dihapus. Klik Simpan Perubahan untuk menyimpan ke database.';
     setTimeout(() => successMessage.value = null, 3000);
   }
 }
 
 // === Metode Generik untuk Gambar Spesifik Halaman (Beranda, Tentang, Layanan) ===
-// Ini akan digunakan oleh homepage_bottom_image_X_url, excellence_image_X_url, service_X_image_url
-// HAPUS BARIS INI (sudah dideklarasikan di bagian atas script)
-// const homepageBottomImageInputs = ref([]); 
-// const excellenceImageInputs = ref([]); // Ini sudah dideklarasikan di bagian atas script
-// const serviceImageInputs = ref([]); // Ini sudah dideklarasikan di bagian atas script
+const homepageBottomImageInputs = ref([]);
+const excellenceImageInputs = ref([]);
+const serviceImageInputs = ref([]);
 
-// HAPUS BARIS INI (sudah dideklarasikan di bagian atas script)
-// const specificImageUploading = ref(Array(9).fill(false)); // 0-2 homepage_bottom, 3-5 excellence, 6-8 service
-// const specificImageError = ref(Array(9).fill(null));     
-// const specificImageSuccessMessage = ref(Array(9).fill(null)); 
-// const specificImageFiles = ref(Array(9).fill(null)); // Untuk menyimpan objek File yang dipilih
+const specificImageUploading = ref(Array(9).fill(false)); 
+const specificImageError = ref(Array(9).fill(null));     
+const specificImageSuccessMessage = ref(Array(9).fill(null)); 
+const specificImageFiles = ref(Array(9).fill(null)); 
 
 function handleSpecificImageSelect(event, propName, index) {
     const file = event.target.files[0];
@@ -600,7 +584,7 @@ function handleSpecificImageSelect(event, propName, index) {
 }
 
 async function uploadSpecificImage(inputRef, propName, index) {
-    const file = specificImageFiles.value[index]; // Ambil file dari array ref lokal
+    const file = specificImageFiles.value[index]; 
     if (!file) {
         specificImageError.value[index] = "Pilih gambar untuk diunggah.";
         return;
@@ -628,10 +612,9 @@ async function uploadSpecificImage(inputRef, propName, index) {
         const imageUrl = result.publicUrl; 
 
         if (imageUrl) {
-            page.value[propName] = imageUrl; // Set URL gambar spesifik langsung
+            page.value[propName] = imageUrl; 
             specificImageSuccessMessage.value[index] = `Gambar berhasil diunggah! Klik Simpan Perubahan.`;
-            // Reset input file setelah upload sukses
-            if (inputRef && inputRef.value) { 
+            if (inputRef && inputRef.value) { // PENTING: Cek apakah ref ada sebelum mengakses .value
                 inputRef.value.value = '';
             }
             specificImageFiles.value[index] = null; 
@@ -769,4 +752,4 @@ hr {
   font-size: 0.7em;
   padding: 3px 6px;
 }
-</style>
+</styLE>
