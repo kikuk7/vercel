@@ -35,7 +35,7 @@
           <div class="mb-3">
             <label for="hero_video_url" class="form-label">URL Video Hero (MP4/YouTube/Drive)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (MP4), 'https://youtube.com/watch?v=ID' (YouTube), 'https://drive.google.com/file/d/ID/view' (Drive)</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4' (untuk MP4), 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' (untuk YouTube), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Video)</small>
             
             <!-- Pratinjau Video Hero -->
             <div v-if="page.hero_video_url" class="hero-media-preview-wrapper mt-3">
@@ -321,6 +321,7 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
+// Ref untuk input file untuk galeri (jika masih digunakan di sini)
 const galleryImageInput = ref(null); 
 const uploadingImage = ref(false);
 const uploadError = ref(null);
@@ -623,6 +624,7 @@ async function uploadSpecificImage(inputRef, propName, index) {
         if (imageUrl) {
             page.value[propName] = imageUrl; 
             specificImageSuccessMessage.value[index] = `Gambar berhasil diunggah! Klik Simpan Perubahan.`;
+            // PENTING: Cara mereset input file yang benar
             if (inputRef && inputRef.value) { 
                 inputRef.value.value = '';
             }
