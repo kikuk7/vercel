@@ -30,34 +30,29 @@
             <div v-if="validationErrors.hero_title" class="text-danger mt-1">{{ validationErrors.hero_title[0] }}</div>
             <small class="form-text text-muted">Judul utama di bagian atas halaman beranda.</small>
           </div>
-          
-          <!-- URL Video Hero -->
+
           <div class="mb-3">
             <label for="hero_video_url" class="form-label">URL Video Hero (MP4)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
             <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4'</small>
-            
-            <!-- Pratinjau Video Hero -->
+
             <div v-if="page.hero_video_url" class="hero-media-preview-wrapper mt-3">
                 <video controls :src="page.hero_video_url" class="hero-media-preview"></video>
                 <button type="button" @click="removeHeroVideo" class="btn btn-danger btn-sm hero-media-remove-btn mt-2">Hapus Video Hero</button>
             </div>
           </div>
 
-          <!-- URL Gambar Hero -->
           <div class="mb-3">
             <label for="hero_image_url" class="form-label">URL Gambar Hero</label>
             <input type="text" class="form-control" id="hero_image_url" v-model="page.hero_image_url">
             <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg'</small>
-            
-            <!-- Input file untuk upload gambar hero -->
+
             <input type="file" ref="heroImageInput" @change="handleHeroImageSelect" class="form-control mt-2 mb-2" accept="image/*">
             <button type="button" @click="uploadHeroImage" class="btn btn-info btn-sm">Unggah Gambar Hero Baru</button>
             <span v-if="uploadingHeroImage" class="ms-2 text-muted">Mengunggah...</span>
             <p v-if="heroUploadError" class="text-danger mt-1">{{ heroUploadError }}</p>
             <p v-if="heroUploadSuccessMessage" class="text-success mt-1">{{ heroUploadSuccessMessage }}</p>
 
-            <!-- Pratinjau Gambar Hero Saat Ini dan Tombol Hapus -->
             <div v-if="page.hero_image_url" class="hero-image-preview-wrapper mt-3">
               <img :src="page.hero_image_url" alt="Pratinjau Gambar Hero" class="img-thumbnail hero-image-preview">
               <button type="button" @click="removeHeroImage" class="btn btn-danger btn-sm hero-image-remove-btn">Hapus Gambar Hero</button>
@@ -80,14 +75,13 @@
               <small class="form-text text-muted">Paragraf utama di bagian "Layanan Kami" pada beranda.</small>
             </div>
 
-            <!-- Manajemen Gambar Bawah Beranda -->
             <h5 class="mt-4">Gambar Bagian Bawah Beranda</h5>
             <template v-for="i in 3" :key="`homepage-bottom-image-${i}`">
               <div class="mb-3">
                 <label :for="`homepage_bottom_image_${i}_url`" class="form-label">URL Gambar Bawah {{ i }}</label>
                 <input type="text" class="form-control" :id="`homepage_bottom_image_${i}_url`" v-model="page[`homepage_bottom_image_${i}_url`]">
                 <small class="form-text text-muted">URL gambar untuk bagian bawah beranda.</small>
-                
+
                 <input type="file" :ref="el => homepageBottomImageInputs[i-1] = el" @change="event => handleSpecificImageSelect(event, `homepage_bottom_image_${i}_url`, i-1)" class="form-control mt-2 mb-2" accept="image/*">
                 <button type="button" @click="uploadSpecificImage(homepageBottomImageInputs[i-1], `homepage_bottom_image_${i}_url`, i-1)" class="btn btn-info btn-sm">Unggah Gambar {{ i }}</button>
                 <button type="button" @click="removeSpecificImage(`homepage_bottom_image_${i}_url`, i-1)" class="btn btn-danger btn-sm ms-2">Hapus Gambar {{ i }}</button>
@@ -95,7 +89,6 @@
                 <p v-if="specificImageError[i-1]" class="text-danger mt-1">{{ specificImageError[i-1] }}</p>
                 <p v-if="specificImageSuccessMessage[i-1]" class="text-success mt-1">{{ specificImageSuccessMessage[i-1] }}</p>
 
-                <!-- Pratinjau Gambar Bawah Beranda -->
                 <div v-if="page[`homepage_bottom_image_${i}_url`]" class="hero-image-preview-wrapper mt-3">
                     <img :src="page[`homepage_bottom_image_${i}_url`]" :alt="`Gambar Bawah ${i}`" class="img-thumbnail hero-image-preview">
                 </div>
@@ -131,14 +124,13 @@
               <input type="text" class="form-control" id="excellence_title" v-model="page.excellence_title">
               <div v-if="validationErrors.excellence_title" class="text-danger mt-1">{{ validationErrors.excellence_title[0] }}</div>
             </div>
-            <!-- Manajemen Gambar Keunggulan -->
             <h5 class="mt-4">Gambar Keunggulan</h5>
             <template v-for="i in 3" :key="`excellence-image-${i}`">
               <div class="mb-3">
                 <label :for="`excellence_image_${i}_url`" class="form-label">URL Gambar Keunggulan {{ i }}</label>
                 <input type="text" class="form-control" :id="`excellence_image_${i}_url`" v-model="page[`excellence_image_${i}_url`]">
                 <small class="form-text text-muted">URL gambar untuk bagian keunggulan.</small>
-                
+
                 <input type="file" :ref="el => excellenceImageInputs[i-1] = el" @change="event => handleSpecificImageSelect(event, `excellence_image_${i}_url`, 3 + i-1)" class="form-control mt-2 mb-2" accept="image/*">
                 <button type="button" @click="uploadSpecificImage(excellenceImageInputs[i-1], `excellence_image_${i}_url`, 3 + i-1)" class="btn btn-info btn-sm">Unggah Gambar {{ i }}</button>
                 <button type="button" @click="removeSpecificImage(`excellence_image_${i}_url`, 3 + i-1)" class="btn btn-danger btn-sm ms-2">Hapus Gambar {{ i }}</button>
@@ -177,7 +169,7 @@
                 <label :for="`service_${i}_image_url`" class="form-label">URL Gambar Kartu Layanan {{ i }}</label>
                 <input type="text" class="form-control" :id="`service_${i}_image_url`" v-model="page[`service_${i}_image_url`]">
                 <small class="form-text text-muted">Contoh: '/static/assets/layanan1.jpg'</small>
-                
+
                 <input type="file" :ref="el => serviceImageInputs[i-1] = el" @change="event => handleSpecificImageSelect(event, `service_${i}_image_url`, 6 + i-1)" class="form-control mt-2 mb-2" accept="image/*">
                 <button type="button" @click="uploadSpecificImage(serviceImageInputs[i-1], `service_${i}_image_url`, 6 + i-1)" class="btn btn-info btn-sm">Unggah Gambar {{ i }}</button>
                 <button type="button" @click="removeSpecificImage(`service_${i}_image_url`, 6 + i-1)" class="btn btn-danger btn-sm ms-2">Hapus Gambar {{ i }}</button>
@@ -193,9 +185,6 @@
           </div>
 
           <hr>
-          <!-- Perbaikan: Bagian Galeri telah dipindahkan ke /admin/gallery -->
-          <!-- Hapus bagian ini jika sudah dipindahkan sepenuhnya dan tidak ingin ada duplikasi -->
-
           <hr>
           <div v-if="page.slug === 'kontak'">
             <h4 class="mb-3">Konten Spesifik Halaman Kontak Kami</h4>
@@ -288,7 +277,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useRuntimeConfig } from '#app'; 
+import { useRuntimeConfig } from '#app';
 
 definePageMeta({
   layout: 'admin',
@@ -302,22 +291,22 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
-const galleryImageInput = ref(null); 
-const uploadingImage = ref(false);
+// const galleryImageInput = ref(null); // Komentar: Ini tidak lagi digunakan di template
+const uploadingImage = ref(false); // Tetap ada untuk potensi penggunaan upload umum
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
-const heroImageInput = ref(null); 
+const heroImageInput = ref(null);
 const uploadingHeroImage = ref(false);
 const heroUploadError = ref(null);
 const heroUploadSuccessMessage = ref(null);
 
 
-const config = useRuntimeConfig(); 
-const API_BASE_URL = config.public.apiBase; 
+const config = useRuntimeConfig();
+const API_BASE_URL = config.public.apiBase;
 
 
 onMounted(async () => {
-  const pageId = route.params.id; 
+  const pageId = route.params.id;
   if (pageId) {
     await fetchPage(pageId);
   } else {
@@ -327,19 +316,19 @@ onMounted(async () => {
 
 async function fetchPage(idOrSlug) {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/${idOrSlug}`); 
+    const response = await fetch(`${API_BASE_URL}/pages/${idOrSlug}`);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Gagal mengambil data halaman.');
     }
-    page.value = await response.json(); 
-    
+    page.value = await response.json();
+
     // Perbaikan: Parse images JSONB dari string jika perlu
     if (typeof page.value.images === 'string' && page.value.images.startsWith('[')) {
       try {
         page.value.images = JSON.parse(page.value.images);
-      } catch (e) { // Fixed to use 'e' from this specific catch block
-        console.error("Failed to parse images JSON for edit form:", e); 
+      } catch (e) {
+        console.error("Failed to parse images JSON for edit form:", e);
         page.value.images = []; // Fallback to empty array
       }
     } else if (!Array.isArray(page.value.images)) {
@@ -358,13 +347,13 @@ const getMediaType = (url) => {
     if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
     if (url.includes('drive.google.com') && url.includes('file/d/')) return 'drive';
     if (url.match(/\.(mp4|webm|ogg)$/i)) return 'mp4';
-    return 'static'; 
+    return 'static';
 };
 
 // Fungsi helper untuk mendapatkan ID YouTube dari URL
 const getYoutubeVideoId = (url) => {
     if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(http:\/\/www.youtube.com\/watch\?v=|http:\/\/youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; // Diperbaiki regex untuk YouTube
     const match = url.match(regExp);
     return (match && match[2] && match[2].length === 11) ? match[2] : null;
 };
@@ -377,6 +366,16 @@ const getDriveFileId = (url) => {
     return (match && match[2]) ? match[2] : null;
 };
 
+// Fungsi untuk menghapus video hero (jika ada)
+function removeHeroVideo() {
+  if (confirm('Apakah Anda yakin ingin menghapus video hero? Ini akan menghapus URL dari database.')) {
+    page.value.hero_video_url = null;
+    page.value.hero_video_source_type = null; // Reset tipe sumber
+    successMessage.value = 'Video hero dihapus. Klik Simpan Perubahan untuk menyimpan ke database.';
+    setTimeout(() => successMessage.value = null, 3000);
+  }
+}
+
 async function updatePage() {
   successMessage.value = null;
   errorMessage.value = null;
@@ -386,28 +385,29 @@ async function updatePage() {
     const pageDataToSend = { ...page.value };
 
     // Konversi array images kembali menjadi string JSON sebelum dikirim ke backend
+    // Bagian ini hanya relevan jika ada manajemen galeri di halaman ini
     if (Array.isArray(pageDataToSend.images)) {
         pageDataToSend.images = JSON.stringify(pageDataToSend.images);
     } else {
-        pageDataToSend.images = '[]'; 
+        pageDataToSend.images = '[]';
     }
-    
+
     // Inisialisasi atau infer hero_video_source_type dan hero_image_source_type
     // Berdasarkan URL yang ada di input fields
     pageDataToSend.hero_video_source_type = getMediaType(pageDataToSend.hero_video_url) || null;
     pageDataToSend.hero_image_source_type = getMediaType(pageDataToSend.hero_image_url) || 'static'; // Default ke static jika tidak ada URL gambar atau tidak dikenali sebagai video/drive
 
-    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, { 
+    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(pageDataToSend) 
+      body: JSON.stringify(pageDataToSend)
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      if (response.status === 422 && errorData.errors) { 
+      if (response.status === 422 && errorData.errors) {
         validationErrors.value = errorData.errors;
         errorMessage.value = errorData.message || "Ada kesalahan validasi. Silakan periksa formulir Anda.";
       } else {
@@ -417,7 +417,7 @@ async function updatePage() {
       successMessage.value = 'Halaman berhasil diperbarui!';
       setTimeout(() => {
         router.push({ path: '/admin/pages', query: { success: 'Halaman berhasil diperbarui!' } });
-      }, 1000); 
+      }, 1000);
     }
   } catch (e) {
     errorMessage.value = e.message;
@@ -427,67 +427,73 @@ async function updatePage() {
 
 // === Metode untuk Upload Gambar Galeri (TETAP DI SINI UNTUK GALERI SLUG) ===
 // Ini akan muncul jika page.slug === 'galeri' seperti di template
+// Catatan: Karena bagian galeri di template dikomentari, fungsi ini tidak akan terpicu secara UI.
+// Anda bisa menghapusnya jika memang tidak lagi dibutuhkan di halaman ini.
 function handleGalleryImageSelect(event) {
-  const file = event.target.files[0];
-  if (file) {
-    uploadError.value = null;
-    uploadSuccessMessage.value = null;
-  }
+  const file = event.target.files[0];
+  if (file) {
+    uploadError.value = null;
+    uploadSuccessMessage.value = null;
+  }
 }
 
 async function uploadGalleryImage() {
-  const file = galleryImageInput.value.files[0];
-  if (!file) {
-    uploadError.value = "Pilih gambar untuk diunggah.";
-    return;
-  }
+  // Pastikan galleryImageInput direferensikan dengan benar jika Anda mengaktifkan kembali bagian galeri
+  // Saat ini, galleryImageInput dikomentari di deklarasi ref, jadi ini akan gagal jika tidak di-uncomment
+  const file = galleryImageInput.value?.files[0]; // Gunakan optional chaining untuk keamanan
+  if (!file) {
+    uploadError.value = "Pilih gambar untuk diunggah.";
+    return;
+  }
 
-  uploadingImage.value = true;
-  uploadError.value = null;
-  uploadSuccessMessage.value = null;
+  uploadingImage.value = true;
+  uploadError.value = null;
+  uploadSuccessMessage.value = null;
 
-  const formData = new FormData();
-  formData.append('image', file); 
+  const formData = new FormData();
+  formData.append('image', file);
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
-      method: 'POST',
-      body: formData 
-    });
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload-image`, {
+      method: 'POST',
+      body: formData
+    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Gagal mengunggah gambar.');
-    }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengunggah gambar.');
+    }
 
-    const result = await response.json();
-    const imageUrl = result.publicUrl; 
+    const result = await response.json();
+    const imageUrl = result.publicUrl;
 
-    if (imageUrl) {
-      if (!Array.isArray(page.value.images)) {
-        page.value.images = [];
-      }
-      page.value.images.push(imageUrl);
-      uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
-      galleryImageInput.value.value = '';
-    } else {
-      throw new Error('URL gambar tidak diterima dari server.');
-    }
+    if (imageUrl) {
+      if (!Array.isArray(page.value.images)) {
+        page.value.images = [];
+      }
+      page.value.images.push(imageUrl);
+      uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
+      if (galleryImageInput.value) { // Pastikan elemen ada sebelum direset
+        galleryImageInput.value.value = ''; // Ini sudah benar
+      }
+    } else {
+      throw new Error('URL gambar tidak diterima dari server.');
+    }
 
-  } catch (e) {
-    uploadError.value = e.message;
-    console.error('Upload image error:', e);
-  } finally {
-    uploadingImage.value = false;
+  } catch (e) {
+    uploadError.value = e.message;
+    console.error('Upload image error:', e);
+  } finally {
+    uploadingImage.value = false;
   }
 }
 
 function removeGalleryImage(index) {
-  if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
-    page.value.images.splice(index, 1);
-    successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
-    setTimeout(() => successMessage.value = null, 3000);
-  }
+  if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
+    page.value.images.splice(index, 1);
+    successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
+    setTimeout(() => successMessage.value = null, 3000);
+  }
 }
 
 
@@ -512,12 +518,12 @@ async function uploadHeroImage() {
   heroUploadSuccessMessage.value = null;
 
   const formData = new FormData();
-  formData.append('image', file); 
+  formData.append('image', file);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+    const response = await fetch(`${API_BASE_URL}/upload-image`, {
       method: 'POST',
-      body: formData 
+      body: formData
     });
 
     if (!response.ok) {
@@ -526,13 +532,13 @@ async function uploadHeroImage() {
     }
 
     const result = await response.json();
-    const imageUrl = result.publicUrl; 
+    const imageUrl = result.publicUrl;
 
     if (imageUrl) {
       page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
       // Tipe sumber akan disimpulkan di updatePage
       heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah! Klik Simpan Perubahan untuk menyimpan.';
-      heroImageInput.value.value = ''; // Reset input file
+      heroImageInput.value.value = ''; // Reset input file (INI SUDAH BENAR)
     } else {
       throw new Error('URL gambar hero tidak diterima dari server.');
     }
@@ -559,10 +565,10 @@ const homepageBottomImageInputs = ref([]);
 const excellenceImageInputs = ref([]);
 const serviceImageInputs = ref([]);
 
-const specificImageUploading = ref(Array(9).fill(false)); 
-const specificImageError = ref(Array(9).fill(null));     
-const specificImageSuccessMessage = ref(Array(9).fill(null)); 
-const specificImageFiles = ref(Array(9).fill(null)); 
+const specificImageUploading = ref(Array(9).fill(false));
+const specificImageError = ref(Array(9).fill(null));
+const specificImageSuccessMessage = ref(Array(9).fill(null));
+const specificImageFiles = ref(Array(9).fill(null));
 
 function handleSpecificImageSelect(event, propName, index) {
     const file = event.target.files[0];
@@ -573,8 +579,9 @@ function handleSpecificImageSelect(event, propName, index) {
     }
 }
 
-async function uploadSpecificImage(inputRef, propName, index) {
-    const file = specificImageFiles.value[index]; 
+// *** PENTING: Perubahan pada parameter pertama dari inputRef menjadi inputElement ***
+async function uploadSpecificImage(inputElement, propName, index) { // Ganti 'inputRef' menjadi 'inputElement'
+    const file = specificImageFiles.value[index];
     if (!file) {
         specificImageError.value[index] = "Pilih gambar untuk diunggah.";
         return;
@@ -585,12 +592,12 @@ async function uploadSpecificImage(inputRef, propName, index) {
     specificImageSuccessMessage.value[index] = null;
 
     const formData = new FormData();
-    formData.append('image', file); 
+    formData.append('image', file);
 
     try {
-        const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+        const response = await fetch(`${API_BASE_URL}/upload-image`, {
             method: 'POST',
-            body: formData 
+            body: formData
         });
 
         if (!response.ok) {
@@ -599,15 +606,16 @@ async function uploadSpecificImage(inputRef, propName, index) {
         }
 
         const result = await response.json();
-        const imageUrl = result.publicUrl; 
+        const imageUrl = result.publicUrl;
 
         if (imageUrl) {
-            page.value[propName] = imageUrl; 
+            page.value[propName] = imageUrl;
             specificImageSuccessMessage.value[index] = `Gambar berhasil diunggah! Klik Simpan Perubahan.`;
-            if (inputRef && inputRef.value) { 
-                inputRef.value.value = '';
+            // *** PENTING: Perubahan di sini: inputElement.value = '' ***
+            if (inputElement) { // inputElement sudah berupa elemen DOM
+                inputElement.value = ''; // Mengosongkan input file secara langsung
             }
-            specificImageFiles.value[index] = null; 
+            specificImageFiles.value[index] = null; // Hapus file yang dipilih dari state
         } else {
             throw new Error('URL gambar tidak diterima dari server.');
         }
@@ -622,7 +630,7 @@ async function uploadSpecificImage(inputRef, propName, index) {
 
 function removeSpecificImage(propName, index) {
     if (confirm(`Apakah Anda yakin ingin menghapus gambar ini? Ini akan menghapus URL dari database.`)) {
-        page.value[propName] = null; 
+        page.value[propName] = null;
         specificImageSuccessMessage.value[index] = 'Gambar dihapus. Klik Simpan Perubahan untuk menyimpan.';
         setTimeout(() => specificImageSuccessMessage.value[index] = null, 3000);
     }
