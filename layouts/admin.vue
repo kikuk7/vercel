@@ -2,7 +2,11 @@
   <div class="admin-layout">
     <aside class="sidebar">
       <div class="sidebar-header">
-        
+        <!-- Anda bisa menambahkan logo atau teks di sini -->
+        <NuxtLink to="/admin/dashboard" class="logo-link">
+          <img src="/static/assets/logo.png" alt="Admin Logo" class="admin-logo" />
+          <span class="logo-text">Admin Panel</span>
+        </NuxtLink>
       </div>
 
       <div class="user-profile">
@@ -32,16 +36,29 @@
                 <li><NuxtLink to="/admin/pages/create" :class="{ 'active-sub': $route.path === '/admin/pages/create' }">Tambah Halaman</NuxtLink></li>
             </ul>
           </li>
+          
+          <!-- Tombol "Edit Info Kontak" yang baru -->
+          <li :class="['nav-item', { 'active': $route.path === '/admin/edit-kontak' }]">
+            <NuxtLink to="/admin/edit-kontak" class="nav-link">
+              <i class="fas fa-address-book nav-icon"></i>
+              <span>Edit Info Kontak</span>
+            </NuxtLink>
+          </li>
+
+          <!-- Tombol "Manajemen Galeri" yang baru -->
+          <li :class="['nav-item', { 'active': $route.path === '/admin/gallery' }]">
+            <NuxtLink to="/admin/gallery" class="nav-link">
+              <i class="fas fa-images nav-icon"></i>
+              <span>Manajemen Galeri</span>
+            </NuxtLink>
+          </li>
+
+          <!-- Tautan yang DIHILANGKAN: Manajemen Produk, Manajemen Pengguna, Pengaturan -->
+          <!--
           <li :class="['nav-item', { 'active': $route.path.startsWith('/admin/products') }]">
             <NuxtLink to="/admin/products" class="nav-link">
               <i class="fas fa-box nav-icon"></i>
               <span>Manajemen Produk</span>
-            </NuxtLink>
-          </li>
-          <li :class="['nav-item', { 'active': $route.path.startsWith('/admin/gallery') }]">
-            <NuxtLink to="/admin/gallery" class="nav-link">
-              <i class="fas fa-images nav-icon"></i>
-              <span>Manajemen Galeri</span>
             </NuxtLink>
           </li>
           <li :class="['nav-item', { 'active': $route.path.startsWith('/admin/users') }]">
@@ -56,6 +73,7 @@
               <span>Pengaturan</span>
             </NuxtLink>
           </li>
+          -->
           <li class="nav-item-header">Lainnya</li>
           <li class="nav-item">
             <a @click="logout" class="nav-link">
@@ -68,7 +86,8 @@
     </aside>
 
     <div class="main-content">
-      
+      <!-- Top Navbar (Anda mungkin punya komponen terpisah untuk ini) -->
+      <!-- <div class="top-navbar"> ... </div> --> 
 
       <div class="page-content-wrapper">
         <NuxtPage />
@@ -141,9 +160,9 @@ html, body {
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  position: sticky; /* Menggunakan sticky agar sidebar ikut scroll jika konten terlalu panjang */
-  top: 0; /* Penting untuk sticky */
-  height: 100vh; /* Agar sidebar setinggi viewport */
+  position: sticky; 
+  top: 0; 
+  height: 100vh; 
   overflow-y: auto;
   z-index: 1000;
   flex-shrink: 0;
@@ -152,13 +171,12 @@ html, body {
 /* Main Content Area */
 .main-content {
   flex-grow: 1;
-  /* Tidak perlu margin-left karena sidebar tidak lagi position: fixed */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* Top Navbar/Header */
+/* Top Navbar/Header (jika ada komponen terpisah, ini mungkin tidak digunakan) */
 .top-navbar {
   background-color: var(--card-bg);
   height: var(--navbar-height);
@@ -184,9 +202,8 @@ html, body {
   align-items: center;
 }
 
-/* Tombol hamburger dihapus, jadi gaya ini tidak diperlukan lagi */
 .toggle-sidebar-btn {
-  display: none;
+  display: none; /* Tombol ini harus di Header.vue untuk mobile nav */
 }
 
 .notification-icon, .user-dropdown {
@@ -241,6 +258,12 @@ html, body {
   justify-content: center;
 }
 
+.logo-link { /* Gaya untuk link logo di sidebar header */
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .admin-logo {
   width: 40px;
   height: 40px;
@@ -248,9 +271,10 @@ html, body {
 }
 
 .logo-text {
-  font-size: 1.5em;
+  font-size: 1.2em; /* Sedikit lebih kecil agar muat */
   font-weight: bold;
   color: white;
+  white-space: nowrap; /* Agar teks tidak wrap */
 }
 
 .user-profile {
@@ -374,31 +398,28 @@ html, body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  /* Untuk mobile (mode portrait) */
   .sidebar {
     width: var(--sidebar-width);
-    position: absolute; /* Ubah ke absolute untuk menyembunyikan sepenuhnya dari view */
-    left: -250px; /* Sembunyikan di luar layar */
-    top: 0; /* Pastikan top 0 */
-    height: 100%; /* Setinggi viewport */
+    position: absolute; 
+    left: -250px; 
+    top: 0; 
+    height: 100%; 
     z-index: 1000;
     box-shadow: 4px 0 10px rgba(0,0,0,0.2);
-    /* Tidak ada transisi transform karena tidak ada toggle JS */
   }
   
   .main-content {
-    margin-left: 0; /* Konten utama tidak ada margin di mobile */
-    width: 100%; /* Memenuhi lebar penuh */
+    margin-left: 0; 
+    width: 100%; 
   }
   .top-navbar {
     padding: 10px 15px;
   }
-  /* Hapus semua gaya toggle-sidebar-btn karena tombol tidak ada */
-  .top-navbar .navbar-left .toggle-sidebar-btn { /* Pastikan ini tidak muncul */
-      display: none;
+  .top-navbar .navbar-left .toggle-sidebar-btn { 
+    display: none;
   }
   .top-navbar .navbar-right {
-    display: none; /* Sembunyikan item kanan navbar di mobile untuk ruang */
+    display: none; 
   }
   .page-title {
     font-size: 1.2em;
