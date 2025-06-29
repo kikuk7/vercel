@@ -173,68 +173,22 @@
                 <textarea class="form-control" :id="`service_${i}_body`" v-model="page[`service_${i}_body`]" rows="3"></textarea>
                 <div v-if="validationErrors[`service_${i}_body`]" class="text-danger mt-1">{{ validationErrors[`service_${i}_body`][0] }}</div>
               </div>
-              <div class="mb-3" v-for="i in 3" :key="i">
-  <label :for="`service_${i}_image_url`" class="form-label">
-    URL Gambar Kartu Layanan {{ i }}
-  </label>
+              <div class="mb-3">
+                <label :for="`service_${i}_image_url`" class="form-label">URL Gambar Kartu Layanan {{ i }}</label>
+                <input type="text" class="form-control" :id="`service_${i}_image_url`" v-model="page[`service_${i}_image_url`]">
+                <small class="form-text text-muted">Contoh: '/static/assets/layanan1.jpg'</small>
+                
+                <input type="file" :ref="el => serviceImageInputs[i-1] = el" @change="event => handleSpecificImageSelect(event, `service_${i}_image_url`, 6 + i-1)" class="form-control mt-2 mb-2" accept="image/*">
+                <button type="button" @click="uploadSpecificImage(serviceImageInputs[i-1], `service_${i}_image_url`, 6 + i-1)" class="btn btn-info btn-sm">Unggah Gambar {{ i }}</button>
+                <button type="button" @click="removeSpecificImage(`service_${i}_image_url`, 6 + i-1)" class="btn btn-danger btn-sm ms-2">Hapus Gambar {{ i }}</button>
+                <span v-if="specificImageUploading[6 + i-1]" class="ms-2 text-muted">Mengunggah...</span>
+                <p v-if="specificImageError[6 + i-1]" class="text-danger mt-1">{{ specificImageError[6 + i-1] }}</p>
+                <p v-if="specificImageSuccessMessage[6 + i-1]" class="text-success mt-1">{{ specificImageSuccessMessage[6 + i-1] }}</p>
 
-  <input
-    type="text"
-    class="form-control"
-    :id="`service_${i}_image_url`"
-    v-model="page[`service_${i}_image_url`]"
-  />
-  <small class="form-text text-muted">
-    Contoh: '/static/assets/layanan1.jpg'
-  </small>
-
-  <!-- Gunakan binding ref DOM yang benar -->
-  <input
-    type="file"
-    class="form-control mt-2 mb-2"
-    accept="image/*"
-    const serviceImageInputs = ref(Array(3).fill(null));
-    :ref="el => serviceImageInputs.value[i - 1] = el"
-    @change="event => handleSpecificImageSelect(event, `service_${i}_image_url`, 6 + (i - 1))"
-  />
-
-  <button
-    type="button"
-    class="btn btn-info btn-sm"
-    @click="serviceImageInputs.value[i - 1] ? uploadSpecificImage(serviceImageInputs.value[i - 1], `service_${i}_image_url`, 6 + (i - 1)) : specificImageError[6 + (i - 1)] = 'Input gambar belum siap, coba lagi.'"
-
-  >
-    Unggah Gambar {{ i }}
-  </button>
-
-  <button
-    type="button"
-    class="btn btn-danger btn-sm ms-2"
-    @click="removeSpecificImage(`service_${i}_image_url`, 6 + (i - 1))"
-  >
-    Hapus Gambar {{ i }}
-  </button>
-
-  <span v-if="specificImageUploading[6 + (i - 1)]" class="ms-2 text-muted">Mengunggah...</span>
-  <p v-if="specificImageError[6 + (i - 1)]" class="text-danger mt-1">
-    {{ specificImageError[6 + (i - 1)] }}
-  </p>
-  <p v-if="specificImageSuccessMessage[6 + (i - 1)]" class="text-success mt-1">
-    {{ specificImageSuccessMessage[6 + (i - 1)] }}
-  </p>
-
-  <div
-    v-if="page[`service_${i}_image_url`]"
-    class="hero-image-preview-wrapper mt-3"
-  >
-    <img
-      :src="page[`service_${i}_image_url`]"
-      :alt="`Gambar Layanan ${i}`"
-      class="img-thumbnail hero-image-preview"
-    />
-  </div>
-</div>
-
+                <div v-if="page[`service_${i}_image_url`]" class="hero-image-preview-wrapper mt-3">
+                    <img :src="page[`service_${i}_image_url`]" :alt="`Gambar Layanan ${i}`" class="img-thumbnail hero-image-preview">
+                </div>
+              </div>
             </template>
           </div>
 
