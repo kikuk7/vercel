@@ -24,3 +24,6 @@ logs
 !.env.example
 
 .vercel
+
+VITE_JSONBIN_API_KEY=$2a$10$RuSo7nMkJLsHfq5lO0RLHeGdDsuMAO4LzpHahsOLWftq4hMO73f/u
+VITE_JSONBIN_BIN_ID=686195c18960c979a5b3f55f

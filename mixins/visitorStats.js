@@ -1,4 +1,3 @@
-// mixins/visitorStats.js
 export default {
   data() {
     return {
@@ -7,10 +6,11 @@ export default {
   },
   methods: {
     async updateStats() {
-      const API_KEY = "$2a$10$0YJ5m64rPDKqjTMOPfThP.3asrzy64YvDlFyM/rZAghcghIG7VoBe";
-      const BIN_ID = "684dde4b8960c979a5a9f79f";
+      const API_KEY = import.meta.env.VITE_JSONBIN_API_KEY;
+      const BIN_ID = import.meta.env.VITE_JSONBIN_BIN_ID;
       const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
       const todayKey = 'visited-' + new Date().toISOString().slice(0, 10);
+
       let visitorId = sessionStorage.getItem('visitor-id');
       if (!visitorId) {
         visitorId = crypto.randomUUID();
@@ -38,7 +38,7 @@ export default {
           localStorage.setItem(todayKey, 'true');
         }
 
-        stats.visitors = (stats.visitors || []).filter(v => v.timestamp > fiveMinutesAgo);
+        stats.visitors = stats.visitors.filter(v => v.timestamp > fiveMinutesAgo);
         const existing = stats.visitors.find(v => v.id === visitorId);
         if (existing) {
           existing.timestamp = nowISO;
@@ -46,12 +46,15 @@ export default {
           stats.visitors.push({ id: visitorId, timestamp: nowISO });
         }
 
-        if (process.client) { // Ensure DOM manipulation only happens on the client-side
-          document.getElementById('total-visitor').innerText = stats.total_visits;
-          document.getElementById('today-visitor').innerText = stats.today_visits;
-          document.getElementById('online-user').innerText = stats.visitors.length;
+        if (typeof document !== 'undefined') {
+          const updateDOM = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = value;
+          };
+          updateDOM('total-visitor', stats.total_visits);
+          updateDOM('today-visitor', stats.today_visits);
+          updateDOM('online-user', stats.visitors.length);
         }
-
 
         await fetch(API_URL, {
           method: 'PUT',
@@ -64,29 +67,20 @@ export default {
 
       } catch (error) {
         console.error('Gagal update statistik:', error);
-        if (process.client) {
-          document.getElementById('total-visitor').innerText = 'Gagal';
-          document.getElementById('today-visitor').innerText = 'Gagal';
-          document.getElementById('online-user').innerText = 'Gagal';
+        if (typeof document !== 'undefined') {
+          ['total-visitor', 'today-visitor', 'online-user'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = 'Gagal';
+          });
         }
       }
     }
   },
   mounted() {
-    // This is handled in each page component that uses this mixin
+    this.updateStats();
+    this.intervalId = setInterval(this.updateStats, 30000); // optional: auto-refresh setiap 30 detik
   },
-  beforeDestroy() {
-    // This is handled in each page component that uses this mixin
+  beforeUnmount() {
+    clearInterval(this.intervalId);
   }
 };
-
-
-const apiKey = import.meta.env.VITE_JSONBIN_API_KEY;
-
-fetch('https://api.jsonbin.io/v3/b/684dde4...', {
-  method: 'GET',
-  headers: {
-    'X-Master-Key': apiKey,
-    'Content-Type': 'application/json'
-  }
-})
