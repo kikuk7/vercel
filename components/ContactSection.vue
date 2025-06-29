@@ -37,7 +37,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from '#app';
 import { useRuntimeConfig } from '#app';
-import visitorStats from '~/mixins/visitorStats'; 
+import useVisitorStats from '~/mixins/visitorStats'; // Impor composable useVisitorStats
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -50,6 +50,10 @@ const page = ref({
   contact_location_title: 'Memuat...',
   contact_location_body: 'Memuat...'
 });
+
+// Panggil composable useVisitorStats
+// Ini akan menyediakan onlineUsers, todayVisitors, totalVisitors sebagai refs
+const { onlineUsers, todayVisitors, totalVisitors } = useVisitorStats();
 
 // Computed property untuk menentukan apakah tombol harus disembunyikan
 const shouldHideButton = computed(() => {
@@ -81,91 +85,19 @@ async function fetchContactPageData() {
   }
 }
 
-// PENTING: Ekspor properti dari mixin secara manual untuk membuatnya tersedia di template <script setup>
-// Ini adalah solusi untuk mengakses data mixin di <script setup>
-const { onlineUsers, todayVisitors, totalVisitors, updateStats } = visitorStats.setup();
-
 onMounted(() => {
   fetchContactPageData(); // Panggil saat komponen dimuat
-  updateStats(); // Panggil updateStats dari mixin secara manual
-  setInterval(updateStats, 30000); // Set interval dari mixin secara manual
+  // updateStats() dan setInterval() tidak perlu dipanggil di sini,
+  // karena sudah diurus oleh composable `useVisitorStats` di dalamnya sendiri.
 });
-
 </script>
 
 <style scoped>
 
 
-/* KELAS CSS UNTUK MENYEMBUNYIKAN TOMBOL */
 .hidden-on-specific-pages {
   display: none !important; 
 }
 
 
 </style>
-```
-
-
-
-```javascript
-// ~/mixins/visitorStats.js
-
-import { ref, onMounted, onBeforeUnmount } from 'vue'; // Impor ref dan lifecycle hooks dari Vue
-
-// Ini sekarang menjadi "Composable" (fungsi hook)
-export default function useVisitorStats() {
-  const onlineUsers = ref(0);
-  const todayVisitors = ref(0);
-  const totalVisitors = ref(0);
-  let intervalId = null; // Gunakan let agar bisa diubah
-
-  const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8080/api'; 
-  const STATS_API_ENDPOINT = `${API_BASE_URL}/visitor-stats`; 
-
-  async function updateStats() {
-    try {
-      // Implementasi ini adalah placeholder atau akan memanggil API backend Anda
-      // Jika Anda memiliki endpoint /api/visitor-stats yang sebenarnya:
-      // const response = await fetch(STATS_API_ENDPOINT);
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! status: ${response.status}`);
-      // }
-      // const data = await response.json();
-      // onlineUsers.value = data.onlineUsers;
-      // todayVisitors.value = data.todayVisitors;
-      // totalVisitors.value = data.totalVisitors;
-
-      // UNTUK SAAT INI, KITA MENGISI DENGAN NILAI ACAK UNTUK DEMO
-      // (Ini akan dihilangkan jika Anda punya API stats yang nyata)
-      onlineUsers.value = Math.floor(Math.random() * 5) + 1; 
-      todayVisitors.value = Math.floor(Math.random() * 50) + 10; 
-      totalVisitors.value = Math.floor(Math.random() * 500) + 100; 
-
-    } catch (error) {
-      console.error("Error updating visitor stats:", error);
-      onlineUsers.value = 'N/A';
-      todayVisitors.value = 'N/A';
-      totalVisitors.value = 'N/A';
-    }
-  }
-
-  // Gunakan lifecycle hooks Composition API
-  onMounted(() => {
-    updateStats(); // Panggil saat komponen dimuat pertama kali
-    intervalId = setInterval(updateStats, 30000); // Set interval
-  });
-
-  onBeforeUnmount(() => { // Gunakan onBeforeUnmount untuk membersihkan interval
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
-  });
-
-  // Ekspor properti dan metode yang dapat diakses dari komponen
-  return {
-    onlineUsers,
-    todayVisitors,
-    totalVisitors,
-    updateStats // Jika Anda ingin komponen bisa memanggil updateStats secara manual
-  };
-}
