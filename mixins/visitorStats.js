@@ -61,27 +61,3 @@ export default {
   }
 }
 
-app.get('/api/visitor-stats', async (req, res) => {
-    try {
-        const onlineUsersResult = await pool.query("SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE last_active > NOW() - INTERVAL '5 minutes'");
-        const todayVisitorsResult = await pool.query("SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE visit_date = CURRENT_DATE");
-        const totalVisitorsResult = await pool.query("SELECT COUNT(DISTINCT ip_address) FROM visitors");
-
-        console.log('Online Users Result:', onlineUsersResult.rows); // Tambahkan ini
-        console.log('Today Visitors Result:', todayVisitorsResult.rows); // Tambahkan ini
-        console.log('Total Visitors Result:', totalVisitorsResult.rows); // Tambahkan ini
-
-        const online = parseInt(onlineUsersResult.rows[0].count) || 0;
-        const today = parseInt(todayVisitorsResult.rows[0].count) || 0;
-        const total = parseInt(totalVisitorsResult.rows[0].count) || 0;
-
-        res.json({
-            onlineUsers: online,
-            todayVisitors: today,
-            totalVisitors: total
-        });
-    } catch (err) {
-        console.error('Kesalahan saat mengambil statistik pengunjung:', err);
-        res.status(500).json({ message: 'Gagal mengambil statistik pengunjung.' });
-    }
-});
