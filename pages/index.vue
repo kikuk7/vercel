@@ -3,11 +3,11 @@
     <section class="hero">
       <div class="container">
         <div class="hero-image-wrapper">
-          <video autoplay muted loop v-if="page.hero_video_url">
+          <video autoplay muted loop class="hero-media">
             <source src="/static/assets/brnd.mp4" type="video/mp4" />
             Browser Anda tidak mendukung video.
           </video>
-          <img :src="page.hero_image_url" :alt="page.hero_title" v-else-if="page.hero_image_url" class="hero-image-fallback" />
+
           <div class="hero-text">
             <h1>{{ page.hero_title }}</h1>
             <NuxtLink to="/produk" class="btn-primary">lihat produk kami</NuxtLink>
@@ -31,68 +31,77 @@
         </div>
       </div>
 
-      
+      <div class="bottom-section">
+        <div class="image-content">
+          <img src="/assets/DSCF5421.jpg" alt="layanan2" class="img-small" />
+          <img src="/assets/DSCF5375.jpg" alt="layanan1" class="img-large" />
+          <img src="/assets/DSCF5385.jpg" alt="layanan3" class="img-small" />
+        </div>
+      </div>
     </section>
   </main>
 </template>
 
 <script>
 import visitorStats from '~/mixins/visitorStats';
-import { useRuntimeConfig } from '#app'; // Penting: Impor useRuntimeConfig
+import { useRuntimeConfig } from '#app';
 
 export default {
   name: 'IndexPage',
   mixins: [visitorStats],
   data() {
     return {
-      // Inisialisasi properti 'page' dengan nilai default kosong atau placeholder
-      // Ini akan diisi oleh data yang diambil dari API
+      // Inisialisasi properti 'page'. hero_video_url dan hero_image_url tidak lagi dibutuhkan
+      // jika media hero sepenuhnya statis dan tidak dikontrol oleh API.
       page: {
-        hero_title: 'Memuat...',
-        hero_video_url: '',
-        hero_image_url: '',
-        homepage_about_section_text: 'Memuat konten...',
-        homepage_services_section_text: 'Memuat konten...'
-      }
+        hero_title: 'Memuat...', // Ini akan diisi dari API
+        homepage_about_section_text: 'Memuat konten...', // Ini akan diisi dari API
+        homepage_services_section_text: 'Memuat konten...' // Ini akan diisi dari API
+      },
+      intervalId: null
     };
   },
   async mounted() {
-    // Ambil runtime config di sini, di dalam mounted hook
     const config = useRuntimeConfig();
-    const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
+    const API_BASE_URL = config.public.apiBase;
 
     // Panggil fungsi untuk mengambil data halaman 'beranda' dari API
-    await this.fetchPageData('beranda', API_BASE_URL); // Teruskan API_BASE_URL sebagai argumen
-    
-    // Panggil updateStats dari mixin
-    this.updateStats(); 
-    // Set up interval untuk update stats
-    this.intervalId = setInterval(this.updateStats, 30000); 
+    // Sekarang hanya untuk teks, bukan media hero
+    await this.fetchPageData('beranda', API_BASE_URL);
+
+    this.updateStats();
+    this.intervalId = setInterval(this.updateStats, 30000);
   },
-  beforeDestroy() {
-    // Bersihkan interval saat komponen dihancurkan
-    clearInterval(this.intervalId); 
+  beforeUnmount() { // Menggunakan beforeUnmount untuk Vue 3
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
   },
   methods: {
-    // Terima apiBaseUrl sebagai argumen
-    async fetchPageData(slug, apiBaseUrl) { 
+    async fetchPageData(slug, apiBaseUrl) {
       try {
+        console.log(`Mengambil data dari: ${apiBaseUrl}/pages/${slug}`);
         const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
+
         if (!response.ok) {
-          // Tangani error jika respons tidak OK (misalnya 404, 500)
-          const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
+          const errorData = await response.json().catch(() => ({ message: 'No additional error info' }));
+          throw new Error(`HTTP error! Status: ${response.status} - ${errorData.message || 'Unknown error'}`);
         }
         const data = await response.json();
-        // Pasangkan data yang diterima langsung dari API ke properti 'page'
-        this.page = data; 
+
+        // Hanya pasangkan properti teks yang relevan dari API
+        this.page.hero_title = data.hero_title || 'Selamat Datang';
+        this.page.homepage_about_section_text = data.homepage_about_section_text || 'Deskripsi singkat tentang kami.';
+        this.page.homepage_services_section_text = data.homepage_services_section_text || 'Deskripsi singkat layanan kami.';
+
+        // hero_video_url dan hero_image_url tidak lagi diperbarui dari API
+        // karena kita menggunakan aset statis untuk media hero.
       } catch (error) {
         console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
-        // Jika terjadi error, Anda bisa mengisi properti 'page' dengan data fallback
-        // atau pesan error agar tidak kosong di UI.
+        // Jika terjadi error, isi properti teks dengan data fallback
         this.page.hero_title = 'Konten Tidak Tersedia';
-        this.page.homepage_about_section_text = 'Maaf, terjadi kesalahan saat memuat konten.';
-        this.page.homepage_services_section_text = 'Silakan coba lagi nanti.';
+        this.page.homepage_about_section_text = 'Maaf, terjadi kesalahan saat memuat konten tentang kami. Silakan coba lagi nanti.';
+        this.page.homepage_services_section_text = 'Maaf, terjadi kesalahan saat memuat konten layanan kami. Silakan coba lagi nanti.';
       }
     }
   }
@@ -100,7 +109,14 @@ export default {
 </script>
 
 <style>
-/* Gaya spesifik halaman jika ada */
+/* Gaya yang sama seperti sebelumnya */
+.hero-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Jika Anda menambahkan gambar fallback statis */
 .hero-image-fallback {
   width: 100%;
   height: 100%;
