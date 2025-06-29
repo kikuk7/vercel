@@ -58,10 +58,10 @@
 
       <div class="bottom-section">
         <div class="image-content">
-          <!-- PENTING: Gambar-gambar ini sekarang DINAMIS dari database -->
-          <img :src="page.homepage_bottom_image_1_url" alt="Gambar Bawah 1" class="img-small" />
-          <img :src="page.homepage_bottom_image_2_url" alt="Gambar Bawah 2" class="img-large" />
-          <img :src="page.homepage_bottom_image_3_url" alt="Gambar Bawah 3" class="img-small" />
+          <!-- PENTING: Gambar-gambar ini sekarang KEMBALI STATIS dari folder /static/assets -->
+          <img src="/static/assets/layanan2.jpg" alt="layanan2" class="img-small" />
+          <img src="/static/assets/layanan1.jpg" alt="layanan1" class="img-large" />
+          <img src="/static/assets/layanan3.jpg" alt="layanan3" class="img-small" />
         </div>
       </div>
     </section>
@@ -84,10 +84,8 @@ export default {
         hero_video_source_type: 'mp4', 
         hero_image_source_type: 'static', 
         homepage_about_section_text: 'Memuat konten...',
-        homepage_services_section_text: 'Memuat konten...',
-        homepage_bottom_image_1_url: '', // Tambahan untuk gambar bawah
-        homepage_bottom_image_2_url: '',
-        homepage_bottom_image_3_url: ''
+        homepage_services_section_text: 'Memuat konten...'
+        // homepage_bottom_image_1_url, 2_url, 3_url tidak lagi diperlukan di sini
       }
     };
   },
@@ -119,9 +117,7 @@ export default {
         this.page.homepage_services_section_text = 'Silakan coba lagi nanti.';
         this.page.hero_video_source_type = 'mp4'; 
         this.page.hero_image_source_type = 'static'; 
-        this.page.homepage_bottom_image_1_url = ''; // Fallback
-        this.page.homepage_bottom_image_2_url = '';
-        this.page.homepage_bottom_image_3_url = '';
+        // homepage_bottom_image_X_url fallbacks tidak lagi diperlukan
       }
     },
     // Fungsi helper untuk mendapatkan ID YouTube dari URL
