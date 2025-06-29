@@ -3,10 +3,30 @@
     <section class="hero">
       <div class="container">
         <div class="hero-image-wrapper">
-          <video autoplay muted loop class="hero-media">
-            <source src="/static/assets/brnd.mp4" type="video/mp4" />
+          <video
+            v-if="page.hero_video_url"
+            autoplay
+            muted
+            loop
+            class="hero-media"
+          >
+            <source :src="page.hero_video_url" type="video/mp4" />
             Browser Anda tidak mendukung video.
           </video>
+
+          <img
+            :src="page.hero_image_url"
+            :alt="page.hero_title || 'Hero Image'"
+            v-else-if="page.hero_image_url"
+            class="hero-media hero-image-fallback"
+          />
+
+          <img
+            src="/images/default-hero-background.jpg"
+            alt="Default Hero Background"
+            class="hero-media hero-image-fallback"
+            v-else
+          />
 
           <div class="hero-text">
             <h1>{{ page.hero_title }}</h1>
@@ -51,12 +71,12 @@ export default {
   mixins: [visitorStats],
   data() {
     return {
-      // Inisialisasi properti 'page'. hero_video_url dan hero_image_url tidak lagi dibutuhkan
-      // jika media hero sepenuhnya statis dan tidak dikontrol oleh API.
       page: {
-        hero_title: 'Memuat...', // Ini akan diisi dari API
-        homepage_about_section_text: 'Memuat konten...', // Ini akan diisi dari API
-        homepage_services_section_text: 'Memuat konten...' // Ini akan diisi dari API
+        hero_title: 'Memuat Konten...',
+        hero_video_url: '', // Akan diisi dari API
+        hero_image_url: '', // Akan diisi dari API
+        homepage_about_section_text: 'Memuat informasi tentang kami...',
+        homepage_services_section_text: 'Memuat informasi layanan kami...'
       },
       intervalId: null
     };
@@ -65,14 +85,12 @@ export default {
     const config = useRuntimeConfig();
     const API_BASE_URL = config.public.apiBase;
 
-    // Panggil fungsi untuk mengambil data halaman 'beranda' dari API
-    // Sekarang hanya untuk teks, bukan media hero
     await this.fetchPageData('beranda', API_BASE_URL);
 
     this.updateStats();
     this.intervalId = setInterval(this.updateStats, 30000);
   },
-  beforeUnmount() { // Menggunakan beforeUnmount untuk Vue 3
+  beforeUnmount() { // Menggunakan beforeUnmount untuk Vue 3 lifecycle
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
@@ -89,19 +107,23 @@ export default {
         }
         const data = await response.json();
 
-        // Hanya pasangkan properti teks yang relevan dari API
-        this.page.hero_title = data.hero_title || 'Selamat Datang';
-        this.page.homepage_about_section_text = data.homepage_about_section_text || 'Deskripsi singkat tentang kami.';
-        this.page.homepage_services_section_text = data.homepage_services_section_text || 'Deskripsi singkat layanan kami.';
-
-        // hero_video_url dan hero_image_url tidak lagi diperbarui dari API
-        // karena kita menggunakan aset statis untuk media hero.
+        // Mengisi semua properti 'page' dari data API
+        this.page = {
+          hero_title: data.hero_title || 'Selamat Datang',
+          hero_video_url: data.hero_video_url || '',
+          hero_image_url: data.hero_image_url || '',
+          homepage_about_section_text: data.homepage_about_section_text || 'Deskripsi singkat tentang kami.',
+          homepage_services_section_text: data.homepage_services_section_text || 'Deskripsi singkat layanan kami.'
+        };
       } catch (error) {
         console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
-        // Jika terjadi error, isi properti teks dengan data fallback
-        this.page.hero_title = 'Konten Tidak Tersedia';
-        this.page.homepage_about_section_text = 'Maaf, terjadi kesalahan saat memuat konten tentang kami. Silakan coba lagi nanti.';
-        this.page.homepage_services_section_text = 'Maaf, terjadi kesalahan saat memuat konten layanan kami. Silakan coba lagi nanti.';
+        this.page = {
+          hero_title: 'Konten Tidak Tersedia',
+          hero_video_url: '', // Biarkan kosong agar fallback gambar statis muncul
+          hero_image_url: '', // Biarkan kosong agar fallback gambar statis muncul
+          homepage_about_section_text: 'Maaf, terjadi kesalahan saat memuat konten tentang kami. Silakan coba lagi nanti.',
+          homepage_services_section_text: 'Maaf, terjadi kesalahan saat memuat konten layanan kami. Silakan coba lagi nanti.'
+        };
       }
     }
   }
@@ -116,10 +138,5 @@ export default {
   object-fit: cover;
 }
 
-/* Jika Anda menambahkan gambar fallback statis */
-.hero-image-fallback {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+
 </style>
