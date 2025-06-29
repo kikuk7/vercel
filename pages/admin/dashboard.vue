@@ -4,6 +4,7 @@
     <p class="lead">Selamat Datang kembali, John David! Anda bisa mulai mengelola website Anda dari sini.</p>
 
     <div class="row g-4 mt-4">
+      <!-- Kartu Total Halaman -->
       <div class="col-md-4 col-sm-6 col-12">
         <div class="card text-white bg-primary mb-3">
           <div class="card-body">
@@ -18,13 +19,14 @@
           </div>
         </div>
       </div>
+      <!-- Kartu Manajemen Galeri -->
       <div class="col-md-4 col-sm-6 col-12">
         <div class="card text-white bg-success mb-3">
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between">
               <div>
                 <h5 class="card-title">Manajemen Galeri</h5>
-                <p class="card-text fs-4 fw-bold">{{ totalGalleryImages }}</p>
+                <p class="card-text fs-4 fw-bold">{{ totalGalleryImages }} Gambar</p>
               </div>
               <i class="fas fa-images fa-3x stat-icon"></i>
             </div>
@@ -32,20 +34,22 @@
           </div>
         </div>
       </div>
+      <!-- Kartu Edit Info Kontak -->
       <div class="col-md-4 col-sm-6 col-12">
         <div class="card text-white bg-warning mb-3"> <!-- Warna yang berbeda untuk kontak -->
           <div class="card-body">
             <div class="d-flex align-items-center justify-content-between">
               <div>
-                <h5 class="card-title">Edit Kontak</h5>
+                <h5 class="card-title">Edit Info Kontak</h5>
                 <p class="card-text fs-4 fw-bold"><i class="fas fa-phone-alt"></i> / <i class="fas fa-envelope"></i></p>
               </div>
               <i class="fas fa-address-book fa-3x stat-icon"></i>
             </div>
-            <NuxtLink to="/admin/edit-kontak" class="text-white text-decoration-none card-footer-link">Edit Info Kontak <i class="fas fa-arrow-circle-right ms-2"></i></NuxtLink>
+            <NuxtLink to="/admin/edit-kontak" class="text-white text-decoration-none card-footer-link">Edit Detail Kontak <i class="fas fa-arrow-circle-right ms-2"></i></NuxtLink>
           </div>
         </div>
       </div>
+      <!-- Kartu Aktivitas Terakhir (Tetap Ada) -->
       <div class="col-md-4 col-sm-12 col-12">
         <div class="card text-white bg-info mb-3">
           <div class="card-body">
@@ -60,6 +64,21 @@
           </div>
         </div>
       </div>
+      <!-- Hapus Kartu Total Pengguna jika tidak digunakan -->
+      <!-- <div class="col-md-4 col-sm-6 col-12">
+        <div class="card text-white bg-secondary mb-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h5 class="card-title">Total Pengguna</h5>
+                <p class="card-text fs-4 fw-bold">{{ totalUsers }}</p>
+              </div>
+              <i class="fas fa-users fa-3x stat-icon"></i>
+            </div>
+            <NuxtLink to="/admin/users" class="text-white text-decoration-none card-footer-link">Lihat Pengguna <i class="fas fa-arrow-circle-right ms-2"></i></NuxtLink>
+          </div>
+        </div>
+      </div> -->
     </div>
 
     <div class="card mt-4 shadow-sm border-0">
@@ -87,11 +106,11 @@ definePageMeta({
   title: 'Dashboard'
 });
 
-const totalPages = ref(0); // Akan diambil dari API
-const totalUsers = ref(0); // Akan diambil dari API atau dihilangkan
-const totalGalleryImages = ref(0); // Akan diambil dari API
+const totalPages = ref(0); 
+const totalGalleryImages = ref(0); 
 const latestActivity = ref('Memuat...');
 const recentActivities = ref([]);
+const errorMessage = ref(null); // Tambahkan ref untuk errorMessage
 
 const config = useRuntimeConfig(); 
 const API_BASE_URL = config.public.apiBase; 
@@ -99,18 +118,18 @@ const API_BASE_URL = config.public.apiBase;
 // Fungsi untuk mengambil statistik dari API
 async function fetchStats() {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages`); // Mengambil semua halaman
+    const response = await fetch(`${API_BASE_URL}/pages`); 
     if (!response.ok) {
+      const errorData = await response.json();
       throw new Error('Gagal mengambil data statistik.');
     }
     const pagesData = await response.json();
     
-    totalPages.value = pagesData.length; // Hitung total halaman
+    totalPages.value = pagesData.length; 
     
     // Temukan halaman galeri untuk menghitung gambar
     const galleryPageData = pagesData.find(p => p.slug === 'galeri');
     if (galleryPageData && galleryPageData.images) {
-      // Pastikan images di-parse jika masih string JSON
       let imagesArray = galleryPageData.images;
       if (typeof imagesArray === 'string' && imagesArray.startsWith('[')) {
         try {
@@ -127,8 +146,6 @@ async function fetchStats() {
       totalGalleryImages.value = 0;
     }
 
-    // Placeholder untuk totalUsers dan recentActivities jika tidak ada API khusus
-    totalUsers.value = 125; // Tetap hardcode jika tidak ada API pengguna
     latestActivity.value = 'Data terbaru berhasil dimuat.';
     recentActivities.value = [
       'Data dashboard diperbarui.',
@@ -140,14 +157,13 @@ async function fetchStats() {
     console.error('Error fetching dashboard stats:', e);
     errorMessage.value = 'Gagal memuat statistik dashboard.';
     totalPages.value = 'N/A';
-    totalUsers.value = 'N/A';
     totalGalleryImages.value = 'N/A';
     latestActivity.value = 'Gagal memuat.';
     recentActivities.value = ['Gagal memuat aktivitas.'];
   }
 }
 
-onMounted(fetchStats); // Muat statistik saat dashboard dimuat
+onMounted(fetchStats); 
 </script>
 
 <style scoped>
@@ -178,7 +194,7 @@ onMounted(fetchStats); // Muat statistik saat dashboard dimuat
 .fw-bold { font-weight: 700 !important; }
 .lead { font-size: 1.25rem; font-weight: 300; color: #6c757d; }
 .mb-0 { margin-bottom: 0 !important; }
-.text-white { color: #fff !important; } /* Diubah agar teks putih benar */
+.text-white { color: #fff !important; } 
 .text-decoration-none { text-decoration: none !important; }
 
 .dashboard-page-title {
