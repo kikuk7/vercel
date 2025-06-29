@@ -200,7 +200,8 @@
   <button
     type="button"
     class="btn btn-info btn-sm"
-    @click="uploadSpecificImage(serviceImageInputs.value[i - 1], `service_${i}_image_url`, 6 + (i - 1))"
+    @click="serviceImageInputs.value[i - 1] ? uploadSpecificImage(serviceImageInputs.value[i - 1], `service_${i}_image_url`, 6 + (i - 1)) : specificImageError[6 + (i - 1)] = 'Input gambar belum siap, coba lagi.'"
+
   >
     Unggah Gambar {{ i }}
   </button>
