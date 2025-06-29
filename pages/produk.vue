@@ -216,7 +216,5 @@ export default {
 </script>
 
 <style>
-.lokasi-info .btn-primary {
-  display: none;
-}
+
 </style>

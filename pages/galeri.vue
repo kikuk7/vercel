@@ -98,7 +98,7 @@ export default {
   margin-bottom: 10px;
   font-size: 2.5em; /* Ukuran judul yang sedikit lebih besar */
   color: #333;
-  margin-top: 100px;
+  margin-top: 50px; /* Margin atas untuk judul */
 }
 
 .galeri-description {
@@ -113,20 +113,24 @@ export default {
 /* Gaya untuk grid gambar galeri */
 .gallery-grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsif: min 280px, memenuhi ruang */
-  gap: 15px; /* Jarak antar gambar */
-  /* max-width dan margin:auto tidak lagi diperlukan di sini karena sudah ditangani oleh .galeri-section-wrapper */
-  margin-bottom: 50px; /* Margin bawah untuk memisahkan dari konten lain */
+  /* Mengatur 3 kolom yang sama, setiap kolom memiliki lebar minimum 100px */
+  /* Auto-fit akan menyesuaikan jumlah kolom, minmax(0, 1fr) untuk mengisi ruang */
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); 
+  gap: 5px; /* Jarak antar gambar yang sangat rapat */
+  max-width: 1200px; /* Batasi lebar maksimum galeri */
+  margin: 0 auto 50px auto; /* Pusatkan galeri dan beri margin bawah */
+  padding: 0; /* Hapus padding di container grid agar gambar menempel ke tepi */
+  box-sizing: border-box;
 }
 
 .gallery-item {
   overflow: hidden;
-  border-radius: 10px; /* Sudut membulat */
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Bayangan yang lebih menonjol */
-  background-color: #fff;
+  border-radius: 8px; /* Sudut membulat */
+  /* box-shadow: 0 5px 15px rgba(0,0,0,0.1); Hapus bayangan agar terlihat lebih padat */
+  background-color: #f0f0f0; /* Latar belakang tipis untuk item */
   display: flex;
-  justify-content: center; /* Memusatkan gambar secara horizontal di dalam item */
-  align-items: center; /* Memusatkan gambar secara vertikal di dalam item */
+  justify-content: center; /* Memusatkan gambar secara horizontal */
+  align-items: center; /* Memusatkan gambar secara vertikal */
   position: relative; 
   height: 200px; /* Tinggi item galeri yang seragam */
 }
@@ -137,13 +141,14 @@ export default {
   object-fit: cover; /* Penting agar gambar mengisi area item dan terpotong jika perlu */
   display: block; 
   transition: transform 0.3s ease; /* Efek hover zoom */
+  border-radius: 8px; /* Sudut membulat pada gambar itu sendiri */
 }
 
 .gallery-item:hover img {
-  transform: scale(1.08); /* Efek zoom saat hover */
+  transform: scale(1.05); /* Efek zoom saat hover */
 }
 
-/* Overlay saat hover (opsional, untuk tombol/teks) */
+/* Hapus overlay jika tidak diperlukan atau sesuaikan */
 .gallery-item:hover::after {
   content: '';
   position: absolute;
@@ -151,9 +156,10 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.3); /* Overlay gelap saat hover */
+  background-color: rgba(0,0,0,0.1); /* Overlay sangat tipis saat hover */
   opacity: 1;
   transition: opacity 0.3s ease;
+  border-radius: 8px;
 }
 
 /* Tambahan untuk tampilan saat tidak ada gambar */
@@ -162,9 +168,10 @@ export default {
   padding: 20px;
   color: #666;
   font-style: italic;
+  grid-column: 1 / -1; /* Pastikan pesan tidak ada gambar merentang penuh */
 }
 
-/* Media Query untuk mengatur grid pada layar yang lebih besar (misal 3 kolom) */
+/* Media Query untuk mengatur grid pada layar yang lebih besar */
 @media (min-width: 992px) {
   .gallery-grid-container {
     grid-template-columns: repeat(3, 1fr); /* 3 kolom di desktop */
@@ -185,6 +192,9 @@ export default {
   }
   .gallery-item {
     height: 250px; /* Tinggi item galeri di mobile */
+  }
+  .galeri-title {
+    font-size: 2em; /* Sesuaikan ukuran judul di mobile */
   }
 }
 </style>

@@ -10,10 +10,15 @@
       <div class="lokasi-info">
         <h3>Lokasi</h3>
         <p>Jl. Projosumarto II, Bengledukuh, Bengle, Kec. Talang, Kabupaten Tegal, Jawa Tengah 52193</p>
-        <a href="https://wa.me/+6287801319313" class="btn-primary"><img src="/static/assets/icon/WA.png" alt="WhatsApp Icon" class="btn-icon-img"> hubungi kami</a>
+        <!-- Tombol yang akan disembunyikan secara kondisional -->
+        <a :href="`https://wa.me/+6287801319313`" 
+           :class="['btn-primary', 'contact-section-btn', { 'hidden-on-specific-pages': isHiddenOnCurrentPage }]">
+          <img src="/static/assets/icon/WA.png" alt="WhatsApp Icon" class="btn-icon-img"> hubungi kami
+        </a>
       </div>
       <div class="pengunjung-info">
         <h3>Pengunjung</h3>
+        <!-- ID ini kemungkinan dari mixin visitorStats, perlu dihubungkan dengan data Vue -->
         <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Online User Icon" class="visitor-icon"> Pengguna Online: <span id="online-user">Memuat...</span></p>
         <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Visitor Today Icon" class="visitor-icon"> Pengunjung Hari Ini: <span id="today-visitor">Memuat...</span></p>
         <p class="visitor-item"><img src="/static/assets/icon/person.png" alt="Total Visitor Icon" class="visitor-icon"> Total Pengunjung: <span id="total-visitor">Memuat...</span></p>
@@ -29,6 +34,21 @@
   </section>
 </template>
 
-<script>
+<script setup>
+import { useRoute } from '#app'; // Impor useRoute
 
+const route = useRoute(); // Inisialisasi useRoute
+
+// Computed property untuk menentukan apakah tombol harus disembunyikan
+const isHiddenOnCurrentPage = () => {
+  const currentPath = route.path; 
+  // Daftar rute di mana tombol harus disembunyikan
+  const pagesToHideButton = [
+    '/produk', 
+    '/kontak'
+  ];
+
+  // Periksa apakah path saat ini ada dalam daftar
+  return pagesToHideButton.includes(currentPath);
+};
 </script>
