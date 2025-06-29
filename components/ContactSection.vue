@@ -55,7 +55,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRuntimeConfig } from '#app';
-import { useVisitorStats } from '@/composables/useVisitorStats';
+import { useVisitorStats } from '@/components/useVisitorStats';
 
 const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
 
