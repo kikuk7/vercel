@@ -60,12 +60,18 @@
             <input type="text" class="form-control" id="hero_image_url" v-model="page.hero_image_url">
             <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (untuk Static), 'https://example.com/image.jpg' (untuk Eksternal), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Gambar)</small>
             
-            <!-- Tambahan: Input file untuk upload gambar hero -->
+            <!-- Input file untuk upload gambar hero -->
             <input type="file" ref="heroImageInput" @change="handleHeroImageSelect" class="form-control mt-2 mb-2" accept="image/*">
             <button type="button" @click="uploadHeroImage" class="btn btn-info btn-sm">Unggah Gambar Hero Baru</button>
             <span v-if="uploadingHeroImage" class="ms-2 text-muted">Mengunggah...</span>
             <p v-if="heroUploadError" class="text-danger mt-1">{{ heroUploadError }}</p>
             <p v-if="heroUploadSuccessMessage" class="text-success mt-1">{{ heroUploadSuccessMessage }}</p>
+
+            <!-- Pratinjau Gambar Hero Saat Ini dan Tombol Hapus -->
+            <div v-if="page.hero_image_url" class="hero-image-preview-wrapper mt-3">
+              <img :src="page.hero_image_url" alt="Pratinjau Gambar Hero" class="img-thumbnail hero-image-preview">
+              <button type="button" @click="removeHeroImage" class="btn btn-danger btn-sm hero-image-remove-btn">Hapus Gambar Hero</button>
+            </div>
           </div>
 
           <hr>
@@ -145,6 +151,9 @@
           </div>
 
           <hr>
+          <!-- Bagian Galeri telah dipindahkan ke /admin/gallery -->
+          <!-- Hapus bagian ini jika sudah dipindahkan sepenuhnya dan tidak ingin ada duplikasi -->
+          <!--
           <div v-if="page.slug === 'galeri'">
             <h4 class="mb-3">Konten Spesifik Halaman Galeri</h4>
             <div class="mb-3">
@@ -153,7 +162,6 @@
               <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
             </div>
             
-            <!-- Bagian untuk Upload dan Kelola Gambar Galeri -->
             <div class="mb-3">
               <label class="form-label">Manajemen Gambar Galeri</label>
               <input type="file" ref="galleryImageInput" @change="handleGalleryImageSelect" class="form-control mb-2" accept="image/*">
@@ -174,8 +182,11 @@
               </div>
             </div>
           </div>
+          -->
 
           <hr>
+          <!-- Perbaikan: Bagian Kontak dipindahkan ke /admin/edit-kontak, dihapus dari sini -->
+          <!--
           <div v-if="page.slug === 'kontak'">
             <h4 class="mb-3">Konten Spesifik Halaman Kontak Kami</h4>
             <div class="mb-3">
@@ -224,6 +235,7 @@
               <small class="form-text text-muted">Contoh: +6287812345678 (gunakan format internasional).</small>
             </div>
           </div>
+          -->
 
           <hr>
           <div v-if="page.slug === 'faq'">
@@ -243,7 +255,7 @@
               <div class="mb-3">
                 <label :for="`faq_${i}_answer`" class="form-label">Jawaban {{ i }}</label>
                 <textarea class="form-control" :id="`faq_${i}_answer`" v-model="page[`faq_${i}_answer`]" rows="3"></textarea>
-                <div v-if="validationErrors[`faq_${i}_answer`]" class="text-danger mt-1">{{ validationErrors.faq_answer[0] }}</div>
+                <div v-if="validationErrors[`faq_${i}_answer`]" class="text-danger mt-1">{{ validationErrors[`faq_${i}_answer`][0] }}</div>
               </div>
             </template>
           </div>
@@ -317,8 +329,8 @@ async function fetchPage(idOrSlug) {
     if (typeof page.value.images === 'string' && page.value.images.startsWith('[')) {
       try {
         page.value.images = JSON.parse(page.value.images);
-      } catch (e) {
-        console.error("Failed to parse images JSON for edit form:", e);
+      } else {
+        console.error("Failed to parse images JSON for edit form:", e); // Menggunakan 'e' dari outer catch, perlu diperbaiki
         page.value.images = []; // Fallback to empty array
       }
     } else if (!Array.isArray(page.value.images)) {
@@ -375,120 +387,120 @@ async function updatePage() {
 
 // === Metode untuk Upload Gambar Galeri ===
 function handleGalleryImageSelect(event) {
-  const file = event.target.files[0];
-  if (file) {
-    uploadError.value = null;
-    uploadSuccessMessage.value = null;
-  }
+  const file = event.target.files[0];
+  if (file) {
+    uploadError.value = null;
+    uploadSuccessMessage.value = null;
+  }
 }
 
 async function uploadGalleryImage() {
-  const file = galleryImageInput.value.files[0];
-  if (!file) {
-    uploadError.value = "Pilih gambar untuk diunggah.";
-    return;
-  }
+  const file = galleryImageInput.value.files[0];
+  if (!file) {
+    uploadError.value = "Pilih gambar untuk diunggah.";
+    return;
+  }
 
-  uploadingImage.value = true;
-  uploadError.value = null;
-  uploadSuccessMessage.value = null;
+  uploadingImage.value = true;
+  uploadError.value = null;
+  uploadSuccessMessage.value = null;
 
-  const formData = new FormData();
-  formData.append('image', file); 
+  const formData = new FormData();
+  formData.append('image', file); 
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
-      method: 'POST',
-      body: formData 
-    });
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+      method: 'POST',
+      body: formData 
+    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Gagal mengunggah gambar.');
-    }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengunggah gambar.');
+    }
 
-    const result = await response.json();
-    const imageUrl = result.publicUrl; 
+    const result = await response.json();
+    const imageUrl = result.publicUrl; 
 
-    if (imageUrl) {
-      if (!Array.isArray(page.value.images)) {
-        page.value.images = [];
-      }
-      page.value.images.push(imageUrl);
-      uploadSuccessMessage.value = 'Gambar berhasil diunggah!';
-      galleryImageInput.value.value = '';
-    } else {
-      throw new Error('URL gambar tidak diterima dari server.');
-    }
+    if (imageUrl) {
+      if (!Array.isArray(page.value.images)) {
+        page.value.images = [];
+      }
+      page.value.images.push(imageUrl);
+      uploadSuccessMessage.value = 'Gambar berhasil diunggah!';
+      galleryImageInput.value.value = '';
+    } else {
+      throw new Error('URL gambar tidak diterima dari server.');
+    }
 
-  } catch (e) {
-    uploadError.value = e.message;
-    console.error('Upload image error:', e);
-  } finally {
-    uploadingImage.value = false;
-  }
+  } catch (e) {
+    uploadError.value = e.message;
+    console.error('Upload image error:', e);
+  } finally {
+    uploadingImage.value = false;
+  }
 }
 
 function removeGalleryImage(index) {
-  if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
-    page.value.images.splice(index, 1);
-    successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
-    setTimeout(() => successMessage.value = null, 3000);
-  }
+  if (confirm('Apakah Anda yakin ingin menghapus gambar ini dari galeri?')) {
+    page.value.images.splice(index, 1);
+    successMessage.value = 'Gambar dihapus dari daftar. Klik Simpan Perubahan untuk menyimpan ke database.';
+    setTimeout(() => successMessage.value = null, 3000);
+  }
 }
 
 // === Metode Baru untuk Upload Gambar Hero ===
 function handleHeroImageSelect(event) {
-  const file = event.target.files[0];
-  if (file) {
-    heroUploadError.value = null;
-    heroUploadSuccessMessage.value = null;
-  }
+  const file = event.target.files[0];
+  if (file) {
+    heroUploadError.value = null;
+    heroUploadSuccessMessage.value = null;
+  }
 }
 
 async function uploadHeroImage() {
-  const file = heroImageInput.value.files[0];
-  if (!file) {
-    heroUploadError.value = "Pilih gambar untuk diunggah.";
-    return;
-  }
+  const file = heroImageInput.value.files[0];
+  if (!file) {
+    heroUploadError.value = "Pilih gambar untuk diunggah.";
+    return;
+  }
 
-  uploadingHeroImage.value = true;
-  heroUploadError.value = null;
-  heroUploadSuccessMessage.value = null;
+  uploadingHeroImage.value = true;
+  heroUploadError.value = null;
+  heroUploadSuccessMessage.value = null;
 
-  const formData = new FormData();
-  formData.append('image', file); 
+  const formData = new FormData();
+  formData.append('image', file); 
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
-      method: 'POST',
-      body: formData 
-    });
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+      method: 'POST',
+      body: formData 
+    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Gagal mengunggah gambar hero.');
-    }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Gagal mengunggah gambar hero.');
+    }
 
-    const result = await response.json();
-    const imageUrl = result.publicUrl; 
+    const result = await response.json();
+    const imageUrl = result.publicUrl; 
 
-    if (imageUrl) {
-      page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
-      page.value.hero_image_source_type = 'external'; // Asumsi gambar diunggah ke eksternal
-      heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah!';
-      heroImageInput.value.value = ''; // Reset input file
-    } else {
-      throw new Error('URL gambar hero tidak diterima dari server.');
-    }
+    if (imageUrl) {
+      page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
+      page.value.hero_image_source_type = 'external'; // Asumsi gambar diunggah ke eksternal
+      heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah!';
+      heroImageInput.value.value = ''; // Reset input file
+    } else {
+      throw new Error('URL gambar hero tidak diterima dari server.');
+    }
 
-  } catch (e) {
-    heroUploadError.value = e.message;
-    console.error('Upload hero image error:', e);
-  } finally {
-    uploadingHeroImage.value = false;
-  }
+  } catch (e) {
+    heroUploadError.value = e.message;
+    console.error('Upload hero image error:', e);
+  } finally {
+    uploadingHeroImage.value = false;
+  }
 }
 
 </script>
@@ -524,54 +536,54 @@ hr {
 }
 
 .image-thumbnail-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .image-thumbnail-item {
-  width: 100px; /* Lebar thumbnail */
-  height: 100px; /* Tinggi thumbnail */
-  overflow: hidden;
-  position: relative;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px;
+  width: 100px; /* Lebar thumbnail */
+  height: 100px; /* Tinggi thumbnail */
+  overflow: hidden;
+  position: relative;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
 }
 
 .image-thumbnail-item img {
-  max-width: 100%;
-  max-height: 80px; /* Batasi tinggi gambar agar tombol hapus terlihat */
-  object-fit: contain; /* Jaga aspek rasio */
-  border-radius: 4px;
+  max-width: 100%;
+  max-height: 80px; /* Batasi tinggi gambar agar tombol hapus terlihat */
+  object-fit: contain; /* Jaga aspek rasio */
+  border-radius: 4px;
 }
 
 .image-thumbnail-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 8px;
 }
 
 .image-thumbnail-item:hover .image-thumbnail-overlay {
-  opacity: 1;
+  opacity: 1;
 }
 
 .image-thumbnail-overlay button {
-  font-size: 0.7em;
-  padding: 3px 6px;
+  font-size: 0.7em;
+  padding: 3px 6px;
 }
 </style>
