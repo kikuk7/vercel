@@ -274,6 +274,39 @@
           </div>
 
           <hr>
+          <div v-if="page.slug === 'galeri'">
+            <h4 class="mb-3">Konten Spesifik Halaman Galeri</h4>
+            <div class="mb-3">
+              <label for="gallery_intro_body" class="form-label">Paragraf Pembuka Galeri</label>
+              <textarea class="form-control" id="gallery_intro_body" v-model="page.gallery_intro_body" rows="3"></textarea>
+              <div v-if="validationErrors.gallery_intro_body" class="text-danger mt-1">{{ validationErrors.gallery_intro_body[0] }}</div>
+            </div>
+
+            <h5 class="mt-4">Manajemen Gambar Galeri</h5>
+            <div class="mb-3">
+              <label for="galleryImageUpload" class="form-label">Unggah Gambar Baru ke Galeri</label>
+              <input type="file" ref="galleryImageInput" @change="handleGalleryImageSelect" class="form-control mt-2 mb-2" accept="image/*">
+              <button type="button" @click="uploadGalleryImage" class="btn btn-info btn-sm">Unggah Gambar ke Galeri</button>
+              <span v-if="uploadingImage" class="ms-2 text-muted">Mengunggah...</span>
+              <p v-if="uploadError" class="text-danger mt-1">{{ uploadError }}</p>
+              <p v-if="uploadSuccessMessage" class="text-success mt-1">{{ uploadSuccessMessage }}</p>
+              <small class="form-text text-muted">Gambar yang diunggah akan ditambahkan ke daftar galeri di bawah. Klik "Simpan Perubahan" untuk menyimpan permanen.</small>
+            </div>
+
+            <div v-if="page.images && page.images.length > 0" class="mt-4">
+              <h6>Gambar-gambar di Galeri:</h6>
+              <div class="image-thumbnail-grid">
+                <div v-for="(image, index) in page.images" :key="index" class="image-thumbnail-item">
+                  <img :src="image" alt="Gambar Galeri" class="img-thumbnail">
+                  <div class="image-thumbnail-overlay">
+                    <button type="button" @click="removeGalleryImage(index)" class="btn btn-danger btn-sm">Hapus</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p v-else class="text-muted mt-3">Tidak ada gambar di galeri ini.</p>
+          </div>
+          <hr>
           <div class="mb-3">
             <label for="body" class="form-label">Konten Halaman (Utama)</label>
             <textarea class="form-control" id="body" v-model="page.body" rows="10"></textarea>
@@ -306,7 +339,7 @@ const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
-const galleryImageInput = ref(null); // Diaktifkan kembali!
+const galleryImageInput = ref(null); // <--- DIUNCOMMENT (DIaktifkan kembali)
 const uploadingImage = ref(false);
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
@@ -359,8 +392,8 @@ async function fetchPage(idOrSlug) {
 // Fungsi untuk menentukan tipe media berdasarkan URL
 const getMediaType = (url) => {
     if (!url) return '';
-    // Perbaikan regex untuk YouTube dan Google Drive
-    if (url.includes('youtube.com/') || url.includes('youtu.be/')) return 'youtube'; // Lebih umum
+    // Perbaikan regex untuk YouTube dan Google Drive yang lebih akurat
+    if (url.includes('youtube.com/') || url.includes('youtu.be/')) return 'youtube';
     if (url.includes('drive.google.com/file/d/')) return 'drive';
     if (url.match(/\.(mp4|webm|ogg)$/i)) return 'mp4';
     return 'static'; // Default untuk gambar atau URL statis lainnya
@@ -405,7 +438,7 @@ async function updatePage() {
     if (Array.isArray(pageDataToSend.images)) {
         pageDataToSend.images = JSON.stringify(pageDataToSend.images);
     } else {
-        pageDataToSend.images = '[]';
+        pageDataToSend.images = '[]'; // Pastikan selalu array kosong jika tidak ada gambar
     }
 
     // Inisialisasi atau infer hero_video_source_type dan hero_image_source_type
