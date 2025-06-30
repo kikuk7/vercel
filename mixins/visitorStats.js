@@ -55,9 +55,10 @@ export default {
           stats.visitors.push({ id: visitorId, timestamp: nowISO });
         }
 
+        // Update DOM jika tersedia
         const updateDOM = (id, value) => {
           const el = document.getElementById(id);
-          if (el) el.innerText = value;
+          if (el) el.textContent = value;
         };
 
         updateDOM('total-visitor', stats.total_visits);
@@ -77,14 +78,17 @@ export default {
         console.error('❌ Gagal update statistik:', error);
         ['total-visitor', 'today-visitor', 'online-user'].forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.innerText = 'Gagal';
+          if (el) el.textContent = 'Gagal';
         });
       }
     }
   },
   mounted() {
+    console.log('✅ Mounting statistik pengunjung...');
     this.updateStats();
-    this.intervalId = setInterval(this.updateStats, 30000);
+    this.intervalId = setInterval(() => {
+      this.updateStats();
+    }, 30000); // gunakan arrow function agar `this` tetap terikat
   },
   beforeUnmount() {
     clearInterval(this.intervalId);
