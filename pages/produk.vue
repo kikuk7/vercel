@@ -214,7 +214,6 @@ export default {
 
 .hamburger-menu {
     cursor: pointer;
-    display: none;
     font-size: 30px;
 }
 
