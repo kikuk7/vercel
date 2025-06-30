@@ -1,7 +1,7 @@
 <template>
   <div class="py-3">
     <h1 class="mb-4 dashboard-page-title">Dashboard Utama</h1>
-    <p class="lead">Selamat Datang kembali, John David! Anda bisa mulai mengelola website Anda dari sini.</p>
+    <p class="lead">Selamat Datang kembali, Admin! Anda bisa mulai mengelola website Anda dari sini.</p>
 
     <div class="row g-4 mt-4">
       <div class="col-md-4 col-sm-6 col-12">
