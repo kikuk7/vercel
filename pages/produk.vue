@@ -231,9 +231,6 @@ export default {
         display: flex;
     }
 }
-.logomobile, .menu {
-    display: none;
-}
 
 @media (max-width: 768px) {
     .logomobile {
