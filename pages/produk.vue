@@ -214,6 +214,7 @@ export default {
 
 .hamburger-menu {
     cursor: pointer;
+    display: none;
     font-size: 30px;
 }
 
@@ -229,6 +230,9 @@ export default {
         align-items: center;
         display: flex;
     }
+}
+.logomobile, .menu {
+    display: none;
 }
 
 @media (max-width: 768px) {
