@@ -11,7 +11,6 @@ export function useVisitorStats() {
   console.log("KEY:", config.public.JSONBIN_API_KEY);
   console.log("BIN:", config.public.JSONBIN_BIN_ID);
 
-
   const API_KEY = config.public.JSONBIN_API_KEY
   const BIN_ID = config.public.JSONBIN_BIN_ID
   const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`

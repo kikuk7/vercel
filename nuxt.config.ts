@@ -12,11 +12,10 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-
-    // ✅ Tambahkan ini
+  public: {
     JSONBIN_API_KEY: process.env.VITE_JSONBIN_API_KEY,
     JSONBIN_BIN_ID: process.env.VITE_JSONBIN_BIN_ID
-  
+  }
 }
 
 })
