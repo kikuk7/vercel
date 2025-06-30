@@ -43,7 +43,6 @@
 </template>
 
 <script>
-import visitorStats from '~/mixins/visitorStats'; // Import the mixin
 
 export default {
   name: 'ProdukPage',
