@@ -48,17 +48,7 @@ import visitorStats from '~/mixins/visitorStats'; // Import the mixin
 export default {
   name: 'ProdukPage',
   mixins: [visitorStats], // Use the mixin for visitor stats
-  head() {
-    return {
-      script: [
-        {
-          src: "https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js",
-          type: "module",
-          body: true // Or head: true depending on where you want it loaded
-        }
-      ]
-    }
-  },
+  
   data() {
     return {
       products: [

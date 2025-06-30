@@ -195,6 +195,7 @@ export default {
   }
   .galeri-title {
     font-size: 2em; /* Sesuaikan ukuran judul di mobile */
+    margin-top: 0px;
   }
 }
 </style>
