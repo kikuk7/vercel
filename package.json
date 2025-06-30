@@ -14,12 +14,11 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "nuxt": "^3.16.0",
     "three": "^0.172.0",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "nuxt": "^3.17.5"
+    "nuxt": "^3.9.2"
   }
 }
