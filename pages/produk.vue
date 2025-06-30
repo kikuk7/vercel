@@ -206,5 +206,39 @@ export default {
 </script>
 
 <style>
+@media (max-width: 768px) {
+    .hamburger-menu {
+        display: block;
+    }
+}
+
+.hamburger-menu {
+    cursor: pointer;
+    display: none;
+    font-size: 30px;
+}
+
+@media (max-width: 768px) {
+    .menu {
+        justify-content: space-between;
+        margin: 20px 10px -8px 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .logomobile, .menu {
+        align-items: center;
+        display: flex;
+    }
+}
+.logomobile, .menu {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .logomobile {
+        justify-content: center;
+    }
+}
 
 </style>
