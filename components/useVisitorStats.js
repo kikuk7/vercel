@@ -1,15 +1,15 @@
+// components/useVisitorStats.js
 import { ref, onMounted, onUnmounted, useRuntimeConfig } from '#imports'
 
-
-
-export function useVisitorStats() {
+export function useVisitorStats() { // Ini adalah fungsi yang diekspor
   const totalVisitors = ref(0)
   const todayVisitors = ref(0)
   const onlineUsers = ref(0)
 
   const config = useRuntimeConfig()
-  console.log("KEY:", config.public.JSONBIN_API_KEY);
-  console.log("BIN:", config.public.JSONBIN_BIN_ID);
+  // Debugging log ini sangat membantu!
+  console.log("KEY (from composable):", config.public.JSONBIN_API_KEY);
+  console.log("BIN (from composable):", config.public.JSONBIN_BIN_ID);
 
   const API_KEY = config.public.JSONBIN_API_KEY
   const BIN_ID = config.public.JSONBIN_BIN_ID
@@ -19,12 +19,17 @@ export function useVisitorStats() {
   let visitorId = null
   let intervalId = null
 
-  async function updateStats() {
+  async function updateStats() { // Fungsi updateStats di sini
     if (!API_KEY || !BIN_ID || BIN_ID === 'undefined') {
       console.error('❌ JSONBin API_KEY atau BIN_ID tidak valid.')
+      // Set nilai reaktif ke 'Error' agar terpantau di UI
+      totalVisitors.value = 'Error';
+      todayVisitors.value = 'Error';
+      onlineUsers.value = 'Error';
       return
     }
 
+    // ... sisa logika updateStats() yang sama (sessionStorage, fetch, filter, dll.) ...
     if (!visitorId) {
       visitorId = sessionStorage.getItem('visitor-id')
       if (!visitorId) {
@@ -38,7 +43,10 @@ export function useVisitorStats() {
         headers: { 'X-Master-Key': API_KEY }
       })
 
-      if (!res.ok) throw new Error(`Fetch gagal: ${res.status}`)
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Fetch gagal: ${res.status} - ${errorText}`);
+      }
 
       const json = await res.json()
       const stats = json.record || {
@@ -79,11 +87,14 @@ export function useVisitorStats() {
       })
     } catch (error) {
       console.error('❌ Gagal update statistik:', error)
+      totalVisitors.value = 'Gagal';
+      todayVisitors.value = 'Gagal';
+      onlineUsers.value = 'Gagal';
     }
   }
 
   onMounted(() => {
-    updateStats()
+    updateStats() // Panggil fungsi updateStats yang didefinisikan di sini
     intervalId = setInterval(updateStats, 30000)
   })
 
@@ -95,6 +106,6 @@ export function useVisitorStats() {
     totalVisitors,
     todayVisitors,
     onlineUsers,
-    updateStats
+    updateStats // Penting: kembalikan juga fungsi updateStats jika ingin dipanggil manual
   }
 }

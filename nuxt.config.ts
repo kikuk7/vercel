@@ -11,12 +11,13 @@ export default defineNuxtConfig({
     }
   },
 
+  // ...
   runtimeConfig: {
-  public: {
-    JSONBIN_API_KEY: process.env.VITE_JSONBIN_API_KEY,
-    JSONBIN_BIN_ID: process.env.VITE_JSONBIN_BIN_ID
+    public: {
+      JSONBIN_API_KEY: process.env.NUXT_PUBLIC_JSONBIN_API_KEY,
+      JSONBIN_BIN_ID: process.env.NUXT_PUBLIC_JSONBIN_BIN_ID,
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
+    }
   }
-}
-
-})
+});
 
