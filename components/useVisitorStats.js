@@ -1,5 +1,9 @@
 import { ref, onMounted, onUnmounted, useRuntimeConfig } from '#imports'
 
+console.log("KEY:", config.public.JSONBIN_API_KEY);
+console.log("BIN:", config.public.JSONBIN_BIN_ID);
+
+
 export function useVisitorStats() {
   const totalVisitors = ref(0)
   const todayVisitors = ref(0)

@@ -8,6 +8,12 @@ export default {
     async updateStats() {
       const API_KEY = import.meta.env.VITE_JSONBIN_API_KEY;
       const BIN_ID = import.meta.env.VITE_JSONBIN_BIN_ID;
+
+      if (!API_KEY || !BIN_ID || BIN_ID === 'undefined') {
+        console.error('❌ JSONBin API_KEY atau BIN_ID tidak valid.');
+        return;
+      }
+
       const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
       const todayKey = 'visited-' + new Date().toISOString().slice(0, 10);
 
@@ -18,9 +24,12 @@ export default {
       }
 
       try {
-        const res = await fetch(API_URL, {
+        const res = await fetch(API_URL + '/latest', {
           headers: { 'X-Master-Key': API_KEY }
         });
+
+        if (!res.ok) throw new Error('Gagal fetch statistik.');
+
         const json = await res.json();
         const stats = json.record || {
           total_visits: 0,
@@ -46,15 +55,14 @@ export default {
           stats.visitors.push({ id: visitorId, timestamp: nowISO });
         }
 
-        if (typeof document !== 'undefined') {
-          const updateDOM = (id, value) => {
-            const el = document.getElementById(id);
-            if (el) el.innerText = value;
-          };
-          updateDOM('total-visitor', stats.total_visits);
-          updateDOM('today-visitor', stats.today_visits);
-          updateDOM('online-user', stats.visitors.length);
-        }
+        const updateDOM = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = value;
+        };
+
+        updateDOM('total-visitor', stats.total_visits);
+        updateDOM('today-visitor', stats.today_visits);
+        updateDOM('online-user', stats.visitors.length);
 
         await fetch(API_URL, {
           method: 'PUT',
@@ -66,19 +74,17 @@ export default {
         });
 
       } catch (error) {
-        console.error('Gagal update statistik:', error);
-        if (typeof document !== 'undefined') {
-          ['total-visitor', 'today-visitor', 'online-user'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.innerText = 'Gagal';
-          });
-        }
+        console.error('❌ Gagal update statistik:', error);
+        ['total-visitor', 'today-visitor', 'online-user'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = 'Gagal';
+        });
       }
     }
   },
   mounted() {
     this.updateStats();
-    this.intervalId = setInterval(this.updateStats, 30000); // optional: auto-refresh setiap 30 detik
+    this.intervalId = setInterval(this.updateStats, 30000);
   },
   beforeUnmount() {
     clearInterval(this.intervalId);
