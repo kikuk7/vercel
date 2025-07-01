@@ -107,6 +107,7 @@ onMounted(async () => {
   margin-right: auto;
   color: #555;
   line-height: 1.6;
+  text-align: justify;
 }
 
 /* Gaya untuk grid gambar galeri */
