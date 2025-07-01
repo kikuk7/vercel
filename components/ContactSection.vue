@@ -44,7 +44,10 @@
     </div>
 
     <div class="map">
-      <iframe src="https://www.google.com/maps/place/Sumber+Alam+Grup/@-6.5697743,107.3341873,9z/data=!4m10!1m2!2m1!1ssumber+alam+grup!3m6!1s0x2e6fb8fc4e0a830f:0x18d216b7449db15c!8m2!3d-6.915304!4d109.1437803!15sChBzdW1iZXIgYWxhbSBncnVwkgEQY29ycG9yYXRlX29mZmljZaoBORABMh8QASIbB-RAIqJhbAwVgujGJh46oJN64AmZM6tTHpw-MhQQAiIQc3VtYmVyIGFsYW0gZ3J1cOABAA!16s%2Fg%2F11f25l2fmr?entry=ttu&g_ep=EgoyMDI1MDYyNi4wIKXMDSoASAFQAw%3D%3D"></iframe>
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d290359.28908634855!2d108.67633979109493!3d-6.7560054978228266!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6fb8fc4e0a830f%3A0x18d216b7449db15c!2sSumber%20Alam%20Grup!5e0!3m2!1sid!2sid!4v1751378501547!5m2!1sid!2sid"
+        width="100%" height="250" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
+      </iframe>
     </div>
   </section>
 </template>
