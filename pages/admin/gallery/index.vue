@@ -28,21 +28,17 @@
           <p v-if="uploadError" class="text-danger mt-1">{{ uploadError }}</p>
           <p v-if="uploadSuccessMessage" class="text-success mt-1">{{ uploadSuccessMessage }}</p>
 
-          <!-- Grid untuk thumbnail gambar yang sudah diunggah -->
           <div class="mt-4 image-thumbnail-grid">
             <div v-for="(imgUrl, idx) in galleryPage.images" :key="idx" class="image-thumbnail-item">
               <img :src="imgUrl" class="img-thumbnail" :alt="`Galeri ${idx + 1}`">
               <div class="image-thumbnail-overlay">
-                <!-- Tombol Hapus -->
                 <button type="button" @click="removeGalleryImage(idx)" class="btn btn-danger btn-sm action-button">Hapus</button>
-                <!-- Tombol Pindah Atas -->
                 <button type="button" @click="moveImageUp(idx)" :disabled="idx === 0" class="btn btn-secondary btn-sm action-button">▲ Pindah Atas</button>
-                <!-- Tombol Pindah Bawah -->
                 <button type="button" @click="moveImageDown(idx)" :disabled="idx === galleryPage.images.length - 1" class="btn btn-secondary btn-sm action-button">▼ Pindah Bawah</button>
               </div>
               <small class="text-muted image-url-text">{{ truncateUrl(imgUrl) }}</small>
             </div>
-            <p v-if="galleryPage.images.length === 0" class="text-muted mt-2 empty-gallery-message">Belum ada gambar di galeri ini.</p>
+            <p v-if="!galleryPage.images || galleryPage.images.length === 0" class="text-muted mt-2 empty-gallery-message">Belum ada gambar di galeri ini.</p>
           </div>
 
           <button type="submit" class="btn btn-success mt-5 save-button">Simpan Perubahan Galeri</button>
@@ -55,33 +51,37 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router'; // Impor useRouter
+import { useRouter } from 'vue-router'; // Impor useRouter
 import { useRuntimeConfig } from '#app';
 
+// Define Page Meta
 definePageMeta({
   layout: 'admin',
   middleware: ['auth-admin'],
   title: 'Manajemen Galeri'
 });
 
+// Reactive State Variables
 const galleryPage = ref({}); 
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
 
-const galleryImageInput = ref(null); 
+const galleryImageInput = ref(null); // Ref untuk input file
 const uploadingImage = ref(false);
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
 
+// Get Runtime Config and Router Instance
 const config = useRuntimeConfig(); 
 const API_BASE_URL = config.public.apiBase; 
-const router = useRouter(); // Inisialisasi useRouter
+const router = useRouter(); 
 
 // Fungsi untuk memuat data halaman 'galeri'
 async function fetchGalleryPageData() {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/galeri`); 
+    // Pastikan URL API sudah benar (menggunakan /api/pages/galeri)
+    const response = await fetch(`${API_BASE_URL}/api/pages/galeri`); 
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Gagal memuat data galeri.');
@@ -89,15 +89,16 @@ async function fetchGalleryPageData() {
     const data = await response.json();
     galleryPage.value = data; 
     
+    // Perbaikan: Parse 'images' dari string JSON jika perlu (dari DB JSONB)
     if (typeof galleryPage.value.images === 'string' && galleryPage.value.images.startsWith('[')) {
       try {
         galleryPage.value.images = JSON.parse(galleryPage.value.images);
       } catch (e) {
         console.error("Gagal mengurai JSON gambar galeri:", e);
-        galleryPage.value.images = []; 
+        galleryPage.value.images = []; // Fallback ke array kosong
       }
     } else if (!Array.isArray(galleryPage.value.images)) {
-      galleryPage.value.images = []; 
+      galleryPage.value.images = []; // Pastikan selalu array untuk konsistensi
     }
 
   } catch (e) {
@@ -114,13 +115,15 @@ async function saveGallery() {
 
   try {
     const pageDataToSend = { ...galleryPage.value };
+    // Konversi array images kembali menjadi string JSON sebelum dikirim ke backend
     if (Array.isArray(pageDataToSend.images)) {
         pageDataToSend.images = JSON.stringify(pageDataToSend.images);
     } else {
-        pageDataToSend.images = '[]'; 
+        pageDataToSend.images = '[]'; // Pastikan selalu array kosong jika tidak ada gambar
     }
 
-    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, { // Menggunakan ID halaman 'galeri'
+    // Perbaikan: Pastikan URL API sudah benar (menggunakan /api/pages/[id])
+    const response = await fetch(`${API_BASE_URL}/api/pages/${pageDataToSend.id}`, { 
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -140,8 +143,7 @@ async function saveGallery() {
       successMessage.value = 'Galeri berhasil diperbarui!';
       // Opsional: Muat ulang data galeri setelah sukses menyimpan (untuk konfirmasi visual)
       await fetchGalleryPageData();
-      // Hapus query parameter jika ada (misalnya dari redirect setelah tambah)
-      router.replace({ query: null }); // Bersihkan query params
+      router.replace({ query: null }); // Bersihkan query params jika ada
       setTimeout(() => successMessage.value = null, 3000); 
     }
   } catch (e) {
@@ -160,7 +162,7 @@ function handleGalleryImageSelect(event) {
 }
 
 async function uploadGalleryImage() {
-  const file = galleryImageInput.value.files[0];
+  const file = galleryImageInput.value?.files[0]; // Gunakan optional chaining untuk keamanan
   if (!file) {
     uploadError.value = "Pilih gambar untuk diunggah.";
     return;
@@ -174,7 +176,8 @@ async function uploadGalleryImage() {
   formData.append('image', file); 
 
   try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+    // Perbaikan: Pastikan URL API sudah benar (menggunakan /api/upload-image)
+    const response = await fetch(`${API_BASE_URL}/api/upload-image`, { 
       method: 'POST',
       body: formData 
     });
@@ -193,7 +196,9 @@ async function uploadGalleryImage() {
       }
       galleryPage.value.images.push(imageUrl);
       uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
-      galleryImageInput.value.value = ''; // Reset input file
+      if (galleryImageInput.value) {
+        galleryImageInput.value.value = ''; // Reset input file
+      }
     } else {
       throw new Error('URL gambar tidak diterima dari server.');
     }
@@ -244,6 +249,7 @@ function truncateUrl(url) {
   return url.substring(0, maxLength - 3) + '...';
 }
 
+// Lifecycle Hook
 onMounted(fetchGalleryPageData); // Muat data galeri saat komponen dimuat
 </script>
 

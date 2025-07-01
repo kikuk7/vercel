@@ -34,7 +34,7 @@
           <div class="mb-3">
             <label for="hero_video_url" class="form-label">URL Video Hero (MP4/YouTube/Drive)</label>
             <input type="text" class="form-control" id="hero_video_url" v-model="page.hero_video_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4', 'https://www.youtube.com/watch?v=YOUR_VIDEO_ID', 'https://drive.google.com/file/d/YOUR_FILE_ID/view'</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/beranda.mp4', 'https://www.youtube.com/watch?v=VIDEO_ID', 'https://drive.google.com/file/d/YOUR_FILE_ID/view'</small>
 
             <div v-if="page.hero_video_url" class="hero-media-preview-wrapper mt-3">
                 <video v-if="getMediaType(page.hero_video_url) === 'mp4'" controls :src="page.hero_video_url" class="hero-media-preview"></video>
@@ -160,6 +160,7 @@
             </template>
           </div>
 
+          <hr>
           <hr>
           <div v-if="page.slug === 'layanan'">
             <h4 class="mb-3">Konten Spesifik Halaman Layanan Kami</h4>
@@ -335,24 +336,39 @@ definePageMeta({
 
 const route = useRoute();
 const router = useRouter();
+const config = useRuntimeConfig();
+const API_BASE_URL = config.public.apiBase;
+
+// Reactive state variables
 const page = ref({});
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
-const galleryImageInput = ref(null); // <--- DIUNCOMMENT (DIaktifkan kembali)
+
+// Refs for file inputs and upload states
+const galleryImageInput = ref(null);
 const uploadingImage = ref(false);
 const uploadError = ref(null);
 const uploadSuccessMessage = ref(null);
+
 const heroImageInput = ref(null);
 const uploadingHeroImage = ref(false);
 const heroUploadError = ref(null);
 const heroUploadSuccessMessage = ref(null);
 
+// Refs for dynamic specific image inputs (homepage, excellence, service)
+const homepageBottomImageInputs = ref([]);
+const excellenceImageInputs = ref([]);
+const serviceImageInputs = ref([]);
 
-const config = useRuntimeConfig();
-const API_BASE_URL = config.public.apiBase;
+// State for specific image uploads (using an array to manage multiple states)
+// Total 9 possible specific images (3 homepage, 3 excellence, 3 service)
+const specificImageUploading = ref(Array(9).fill(false));
+const specificImageError = ref(Array(9).fill(null));
+const specificImageSuccessMessage = ref(Array(9).fill(null));
+const specificImageFiles = ref(Array(9).fill(null)); // To hold selected files temporarily
 
-
+// Fetch page data on component mount
 onMounted(async () => {
   const pageId = route.params.id;
   if (pageId) {
@@ -364,14 +380,15 @@ onMounted(async () => {
 
 async function fetchPage(idOrSlug) {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/${idOrSlug}`);
+    const response = await fetch(`${API_BASE_URL}/api/pages/${idOrSlug}`); // Ensure /api/ prefix
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Gagal mengambil data halaman.');
     }
-    page.value = await response.json();
+    const data = await response.json();
+    page.value = data;
 
-    // Perbaikan: Parse images JSONB dari string jika perlu
+    // Parse images JSONB from string if necessary
     if (typeof page.value.images === 'string' && page.value.images.startsWith('[')) {
       try {
         page.value.images = JSON.parse(page.value.images);
@@ -389,17 +406,17 @@ async function fetchPage(idOrSlug) {
   }
 }
 
-// Fungsi untuk menentukan tipe media berdasarkan URL
+// Function to determine media type based on URL
 const getMediaType = (url) => {
     if (!url) return '';
-    // Perbaikan regex untuk YouTube dan Google Drive yang lebih akurat
-    if (url.includes('youtube.com/') || url.includes('youtu.be/')) return 'youtube';
+    // Improved regex for YouTube and Google Drive URLs
+    if (url.includes('youtube.com/watch') || url.includes('youtu.be/') || url.includes('youtube.com/embed')) return 'youtube';
     if (url.includes('drive.google.com/file/d/')) return 'drive';
     if (url.match(/\.(mp4|webm|ogg)$/i)) return 'mp4';
-    return 'static'; // Default untuk gambar atau URL statis lainnya
+    return 'static'; // Default for images or other static URLs
 };
 
-// Fungsi helper untuk mendapatkan ID YouTube dari URL
+// Helper function to get YouTube video ID from URL
 const getYoutubeVideoId = (url) => {
     if (!url) return null;
     const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -407,7 +424,7 @@ const getYoutubeVideoId = (url) => {
     return (match && match[1]) ? match[1] : null;
 };
 
-// Fungsi helper untuk mendapatkan ID File Google Drive dari URL
+// Helper function to get Google Drive File ID from URL
 const getDriveFileId = (url) => {
     if (!url) return null;
     const regExp = /(?:drive\.google\.com\/file\/d\/|drive\.google\.com\/open\?id=)([^#\&\?\/]+)/;
@@ -415,11 +432,11 @@ const getDriveFileId = (url) => {
     return (match && match[1]) ? match[1] : null;
 };
 
-// Fungsi untuk menghapus video hero (jika ada)
+// Function to remove hero video
 function removeHeroVideo() {
   if (confirm('Apakah Anda yakin ingin menghapus video hero? Ini akan menghapus URL dari database.')) {
     page.value.hero_video_url = null;
-    page.value.hero_video_source_type = null; // Reset tipe sumber
+    page.value.hero_video_source_type = null; // Reset source type
     successMessage.value = 'Video hero dihapus. Klik Simpan Perubahan untuk menyimpan ke database.';
     setTimeout(() => successMessage.value = null, 3000);
   }
@@ -433,20 +450,18 @@ async function updatePage() {
   try {
     const pageDataToSend = { ...page.value };
 
-    // Konversi array images kembali menjadi string JSON sebelum dikirim ke backend
-    // Bagian ini hanya relevan jika ada manajemen galeri di halaman ini
+    // Convert images array back to JSON string before sending to backend
     if (Array.isArray(pageDataToSend.images)) {
         pageDataToSend.images = JSON.stringify(pageDataToSend.images);
     } else {
-        pageDataToSend.images = '[]'; // Pastikan selalu array kosong jika tidak ada gambar
+        pageDataToSend.images = '[]'; // Ensure it's always an empty array if no images
     }
 
-    // Inisialisasi atau infer hero_video_source_type dan hero_image_source_type
-    // Berdasarkan URL yang ada di input fields
+    // Infer hero_video_source_type and hero_image_source_type based on URLs
     pageDataToSend.hero_video_source_type = getMediaType(pageDataToSend.hero_video_url) || null;
-    pageDataToSend.hero_image_source_type = getMediaType(pageDataToSend.hero_image_url) || 'static'; // Default ke static jika tidak ada URL gambar atau tidak dikenali sebagai video/drive
+    pageDataToSend.hero_image_source_type = getMediaType(pageDataToSend.hero_image_url) || 'static'; // Default to static if no image URL or not recognized as video/drive
 
-    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/pages/${pageDataToSend.id}`, { // Ensure /api/ prefix
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -474,7 +489,7 @@ async function updatePage() {
   }
 }
 
-// === Metode untuk Upload Gambar Galeri (Diaktifkan Kembali) ===
+// === Methods for Gallery Image Upload ===
 function handleGalleryImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
@@ -484,7 +499,7 @@ function handleGalleryImageSelect(event) {
 }
 
 async function uploadGalleryImage() {
-  const file = galleryImageInput.value?.files[0]; // Gunakan optional chaining untuk keamanan
+  const file = galleryImageInput.value?.files[0]; // Use optional chaining for safety
   if (!file) {
     uploadError.value = "Pilih gambar untuk diunggah.";
     return;
@@ -498,7 +513,7 @@ async function uploadGalleryImage() {
   formData.append('image', file);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, {
+    const response = await fetch(`${API_BASE_URL}/api/upload-image`, { // Ensure /api/ prefix
       method: 'POST',
       body: formData
     });
@@ -518,7 +533,7 @@ async function uploadGalleryImage() {
       page.value.images.push(imageUrl);
       uploadSuccessMessage.value = 'Gambar berhasil diunggah! Klik Simpan Perubahan untuk menyimpan ke database.';
       if (galleryImageInput.value) {
-        galleryImageInput.value.value = ''; // Reset input file
+        galleryImageInput.value.value = ''; // Reset file input
       }
     } else {
       throw new Error('URL gambar tidak diterima dari server.');
@@ -540,8 +555,7 @@ function removeGalleryImage(index) {
   }
 }
 
-
-// === Metode untuk Upload Gambar Hero ===
+// === Methods for Hero Image Upload ===
 function handleHeroImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
@@ -551,7 +565,7 @@ function handleHeroImageSelect(event) {
 }
 
 async function uploadHeroImage() {
-  const file = heroImageInput.value.files[0];
+  const file = heroImageInput.value?.files[0]; // Use optional chaining
   if (!file) {
     heroUploadError.value = "Pilih gambar untuk diunggah.";
     return;
@@ -565,7 +579,7 @@ async function uploadHeroImage() {
   formData.append('image', file);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, {
+    const response = await fetch(`${API_BASE_URL}/api/upload-image`, { // Ensure /api/ prefix
       method: 'POST',
       body: formData
     });
@@ -579,10 +593,11 @@ async function uploadHeroImage() {
     const imageUrl = result.publicUrl;
 
     if (imageUrl) {
-      page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
-      // Tipe sumber akan disimpulkan di updatePage
+      page.value.hero_image_url = imageUrl; // Set hero image URL directly
       heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah! Klik Simpan Perubahan untuk menyimpan.';
-      heroImageInput.value.value = ''; // Reset input file
+      if (heroImageInput.value) {
+        heroImageInput.value.value = ''; // Reset file input
+      }
     } else {
       throw new Error('URL gambar hero tidak diterima dari server.');
     }
@@ -597,23 +612,14 @@ async function uploadHeroImage() {
 
 function removeHeroImage() {
   if (confirm('Apakah Anda yakin ingin menghapus gambar hero? Ini akan menghapus URL dari database.')) {
-    page.value.hero_image_url = null; // Setel ke null atau string kosong
-    page.value.hero_image_source_type = 'static'; // Kembali ke tipe default jika dihapus
+    page.value.hero_image_url = null; // Set to null or empty string
+    page.value.hero_image_source_type = 'static'; // Revert to default type if removed
     successMessage.value = 'Gambar hero dihapus. Klik Simpan Perubahan untuk menyimpan ke database.';
     setTimeout(() => successMessage.value = null, 3000);
   }
 }
 
-// === Metode Generik untuk Gambar Spesifik Halaman (Beranda, Tentang, Layanan) ===
-const homepageBottomImageInputs = ref([]);
-const excellenceImageInputs = ref([]);
-const serviceImageInputs = ref([]);
-
-const specificImageUploading = ref(Array(9).fill(false));
-const specificImageError = ref(Array(9).fill(null));
-const specificImageSuccessMessage = ref(Array(9).fill(null));
-const specificImageFiles = ref(Array(9).fill(null));
-
+// === Generic Methods for Specific Page Images (Homepage, About, Services) ===
 function handleSpecificImageSelect(event, propName, index) {
     const file = event.target.files[0];
     if (file) {
@@ -638,7 +644,7 @@ async function uploadSpecificImage(inputElement, propName, index) {
     formData.append('image', file);
 
     try {
-        const response = await fetch(`${API_BASE_URL}/upload-image`, {
+        const response = await fetch(`${API_BASE_URL}/api/upload-image`, { // Ensure /api/ prefix
             method: 'POST',
             body: formData
         });
@@ -655,9 +661,9 @@ async function uploadSpecificImage(inputElement, propName, index) {
             page.value[propName] = imageUrl;
             specificImageSuccessMessage.value[index] = `Gambar berhasil diunggah! Klik Simpan Perubahan.`;
             if (inputElement) {
-                inputElement.value = ''; // Mengosongkan input file secara langsung
+                inputElement.value = ''; // Clear file input directly
             }
-            specificImageFiles.value[index] = null; // Hapus file yang dipilih dari state
+            specificImageFiles.value[index] = null; // Clear selected file from state
         } else {
             throw new Error('URL gambar tidak diterima dari server.');
         }
@@ -710,7 +716,7 @@ hr {
 }
 
 /* Gaya untuk pratinjau media hero */
-.hero-video-preview-wrapper, .hero-image-preview-wrapper {
+.hero-media-preview-wrapper {
   max-width: 300px; /* Batasi lebar pratinjau */
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -727,11 +733,29 @@ hr {
   object-fit: contain; /* Jaga aspek rasio */
 }
 
-.hero-image-preview {
-  max-height: 200px; /* Batasi tinggi pratinjau gambar */
+.hero-image-preview-wrapper {
+  max-width: 300px; /* Batasi lebar pratinjau gambar hero */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 15px;
+  position: relative;
+  background-color: #f0f0f0;
+  display: flex; /* Untuk menempatkan tombol hapus di atas gambar */
+  justify-content: center;
+  align-items: center;
+  padding: 5px; /* Padding di dalam wrapper */
 }
 
-.hero-media-remove-btn {
+.hero-image-preview {
+  max-width: 100%;
+  max-height: 200px; /* Batasi tinggi pratinjau gambar */
+  object-fit: contain; /* Jaga aspek rasio */
+  display: block;
+  border-radius: 4px;
+}
+
+.hero-media-remove-btn, .hero-image-remove-btn {
   position: absolute;
   top: 5px;
   right: 5px;
