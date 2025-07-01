@@ -47,7 +47,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'; // Import ref, onMounted, onUnmounted
 import { useRuntimeConfig } from '#app';
 // --- IMPORTANT: Ensure this path is correct based on where you moved useVisitorStats.js ---
-import { useVisitorStats } from '@/composables/useVisitorStats'; 
+import { useVisitorStats } from '~/components/useVisitorStats'; 
 
 // Use the useVisitorStats composable
 // This automatically handles the visitor count logic (fetch, update, etc.)
