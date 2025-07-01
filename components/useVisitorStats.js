@@ -8,11 +8,12 @@ export function useVisitorStats() { // Ini adalah fungsi yang diekspor
 
   const config = useRuntimeConfig()
   // Debugging log ini sangat membantu!
-  console.log("KEY (from composable):", config.public.JSONBIN_API_KEY);
-  console.log("BIN (from composable):", config.public.JSONBIN_BIN_ID);
+  console.log("KEY (from composable):", config.public.NUXT_PUBLIC_JSONBIN_API_KEY);
+  console.log("BIN (from composable):", config.public.NUXT_PUBLIC_JSONBIN_BIN_ID);
 
-  const API_KEY = config.public.JSONBIN_API_KEY
-  const BIN_ID = config.public.JSONBIN_BIN_ID
+  const API_KEY = config.public.NUXT_PUBLIC_JSONBIN_API_KEY
+  const BIN_ID = config.public.NUXT_PUBLIC_JSONBIN_BIN_ID
+
   const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`
   const todayKey = 'visited-' + new Date().toISOString().slice(0, 10)
 
