@@ -102,9 +102,6 @@ onMounted(async () => {
 
 .galeri-description {
   margin-bottom: 30px;
-  max-width: 800px; /* Batasi lebar deskripsi agar tidak terlalu panjang */
-  margin-left: auto;
-  margin-right: auto;
   color: #555;
   line-height: 1.6;
   text-align: justify;
