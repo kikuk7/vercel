@@ -13,9 +13,8 @@ export default defineNuxtConfig({
   // ...
   runtimeConfig: {
     public: {
-      JSONBIN_API_KEY: process.env.NUXT_PUBLIC_JSONBIN_API_KEY,
-      JSONBIN_BIN_ID: process.env.NUXT_PUBLIC_JSONBIN_BIN_ID,
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY
     }
   }
 });

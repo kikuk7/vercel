@@ -1,11 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 
-export default defineNuxtPlugin(nuxtApp => {
-  const config = useRuntimeConfig()
-  const supabaseUrl = config.public.SUPABASE_URL as string
-  const supabaseKey = config.public.SUPABASE_ANON_KEY as string
+export default defineNuxtPlugin((nuxtApp) => {
+  const config = useRuntimeConfig() as unknown as {
+    public: {
+      supabaseUrl: string
+      supabaseAnonKey: string
+    }
+  }
 
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  if (!config.public.supabaseUrl || !config.public.supabaseAnonKey) {
+    throw new Error('Supabase URL or Anon Key is missing!')
+  }
 
-  nuxtApp.provide('supabase', supabase)
+  const supabase = createClient(
+    config.public.supabaseUrl,
+    config.public.supabaseAnonKey
+  )
+
+  return {
+    provide: {
+      supabase
+    }
+  }
 })
