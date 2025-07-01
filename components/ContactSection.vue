@@ -20,8 +20,7 @@
       <div class="lokasi-info">
         <h3>{{ page.contact_location_title }}</h3>
         <p>{{ page.contact_location_body }}</p>
-        <a v-if="page.contact_whatsapp_number && page.contact_whatsapp_number !== 'Error Memuat'"
-           :href="`https://wa.me/${page.contact_whatsapp_number}`"
+        <a :href="`https://wa.me/${page.contact_whatsapp_number}`"
            :class="['btn-primary', 'contact-section-btn', { 'hidden-on-specific-pages': shouldHideButton }]">
           <img src="/static/assets/icon/WA.png" alt="WA Icon" class="btn-icon-img"> hubungi kami
         </a>
@@ -46,7 +45,7 @@
 
     <div class="map">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18..."
+        src="https://www.google.com/maps/embed?pb=!1m18... (pendekkan untuk kejelasan)"
         width="100%" height="250" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
       </iframe>
     </div>
@@ -54,16 +53,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRuntimeConfig } from '#app'
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRuntimeConfig } from '#app';
+import { useVisitorStats } from '@/components/useVisitorStats';
 
-const totalVisitors = ref(0)
-const todayVisitors = ref(0)
-const onlineUsers = ref(0)
+const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
 
-const route = useRoute()
-const config = useRuntimeConfig()
-const API_BASE_URL = config.public.apiBase || 'https://cvbackend-production-cb7f.up.railway.app/api'
+const route = useRoute();
+const config = useRuntimeConfig();
+const API_BASE_URL = config.public.apiBase;
 
 const page = ref({
   contact_email_address: 'Memuat...',
@@ -71,54 +69,29 @@ const page = ref({
   contact_whatsapp_number: 'Memuat...',
   contact_location_title: 'Memuat...',
   contact_location_body: 'Memuat...'
-})
+});
 
 const shouldHideButton = computed(() => {
-  return ['/produk', '/kontak'].includes(route.path)
-})
-
-async function fetchVisitorStats() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/visitor-stats`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_agent: navigator.userAgent
-      })
-    })
-
-    if (!response.ok) throw new Error('Gagal ambil statistik')
-
-    const data = await response.json()
-
-    totalVisitors.value = data.total || 0
-    todayVisitors.value = data.today || 0
-    onlineUsers.value = data.online || 0
-  } catch (error) {
-    console.error('Gagal ambil statistik pengunjung:', error)
-  }
-}
+  const currentPath = route.path;
+  return ['/produk', '/kontak'].includes(currentPath);
+});
 
 async function fetchContactPageData() {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/kontak`)
-    if (!response.ok) throw new Error('HTTP error ' + response.status)
-    page.value = await response.json()
+    const response = await fetch(`${API_BASE_URL}/pages/kontak`);
+    if (!response.ok) throw new Error('HTTP error ' + response.status);
+    page.value = await response.json();
   } catch (error) {
-    console.error('Gagal mengambil data halaman kontak:', error)
-    page.value.contact_email_address = 'Error Memuat'
-    page.value.contact_phone = 'Error Memuat'
-    page.value.contact_whatsapp_number = ''
-    page.value.contact_location_title = 'Error Memuat'
-    page.value.contact_location_body = 'Error Memuat'
+    console.error('Gagal mengambil data halaman kontak:', error);
+    page.value.contact_email_address = 'Error Memuat';
+    page.value.contact_phone = 'Error Memuat';
+    page.value.contact_whatsapp_number = '';
+    page.value.contact_location_title = 'Error Memuat';
+    page.value.contact_location_body = 'Error Memuat';
   }
 }
 
-onMounted(() => {
-  fetchContactPageData()
-  fetchVisitorStats()
-  setInterval(fetchVisitorStats, 30000)
-})
+onMounted(fetchContactPageData);
 </script>
 
 <style scoped>
