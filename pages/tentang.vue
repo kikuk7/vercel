@@ -30,12 +30,15 @@
 
     <section class="galeri">
       <section class="container">
+        <!-- Menggunakan excellence_title dari database -->
         <h2 class="section-title">{{ page.excellence_title }}</h2>
       </section>
       <div class="tentang-grid">
-        <img :src="page.excellence_image_1_url" alt="Keunggulan 1" v-if="page.excellence_image_1_url" />
-        <img :src="page.excellence_image_2_url" alt="Keunggulan 2" v-if="page.excellence_image_2_url" />
-        <img :src="page.excellence_image_3_url" alt="Keunggulan 3" v-if="page.excellence_image_3_url" />
+        <!-- Gambar-gambar ini masih hardcoded. Untuk membuatnya dinamis, 
+             Anda perlu kolom di DB untuk menyimpan URL gambar-gambar ini atau mengadopsi struktur JSONB. -->
+        <img src="/static/assets/tentang2.png" alt="Keunggulan 1" />
+        <img src="/static/assets/tentang1.png" alt="Keunggulan 2" />
+        <img src="/static/assets/tentang3.png" alt="Keunggulan 3" />
       </div>
     </section>
   </main>
