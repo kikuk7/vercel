@@ -1,20 +1,15 @@
 <template>
   <main>
-    <!-- Wrapper baru untuk mengontrol lebar dan pemusatan seluruh bagian galeri -->
     <section class="galeri-section-wrapper"> 
-      <h2 class="galeri-title">Galeri Kami</h2>
-      <p class="galeri-description">
-        <!-- Menggunakan gallery_intro_body dari database -->
-        {{ page.gallery_intro_body }}
+      <h2 class="galeri-title">{{ page.gallery_main_title || 'Galeri Kami' }}</h2> <p class="galeri-description">
+        {{ page.gallery_intro_body || 'Memuat deskripsi galeri...' }}
       </p>
       
-      <!-- Grid untuk gambar galeri -->
       <div class="gallery-grid-container"> 
         <div v-for="(imageUrl, index) in page.images" :key="index" class="gallery-item">
           <img :src="imageUrl" :alt="`Galeri ${index + 1}`">
         </div>
       </div>
-      <!-- Pesan jika tidak ada gambar -->
       <div v-if="!page.images || page.images.length === 0" class="no-images-message">
         Tidak ada gambar untuk ditampilkan.
       </div>
@@ -22,65 +17,71 @@
   </main>
 </template>
 
-<script>
-import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRuntimeConfig } from '#app';
+// Impor useVisitorStats.js. Pastikan path ini benar!
+// Berdasarkan diskusi terakhir, sepertinya di '~/components/useVisitorStats.js'
+import { useVisitorStats } from '~/components/useVisitorStats'; 
 
-export default {
-  name: 'GaleriPage',
-  data() {
-    return {
-      // Inisialisasi properti 'page' dengan nilai default/placeholder
-      page: {
-        gallery_intro_body: 'Memuat galeri...',
-        images: [] // Inisialisasi sebagai array kosong
-      }
-    };
-  },
-  methods: {
-    async fetchPageData(slug, apiBaseUrl) { // Terima apiBaseUrl sebagai argumen
-      try {
-        const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
-        }
-        const data = await response.json();
-        
-        this.page = data; 
-        
-        // PENTING: Periksa dan parse 'images' jika datang sebagai string JSON (dari DB JSONB)
-        if (typeof this.page.images === 'string' && this.page.images.startsWith('[')) {
-          try {
-            this.page.images = JSON.parse(this.page.images);
-          } catch (parseError) {
-            console.error('Gagal mengurai JSON gambar dari DB:', parseError);
-            this.page.images = []; 
-          }
-        } else if (!Array.isArray(this.page.images)) {
-          this.page.images = []; 
-        }
-      } catch (error) {
-        console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
-        // Fallback data jika gagal mengambil dari API
-        this.page.gallery_intro_body = 'Gagal memuat galeri.';
-        this.page.images = []; 
-      }
+// Panggil composable useVisitorStats di sini.
+// Ini akan mengelola seluruh logika visitor counter (fetch, update, onMounted, onUnmounted).
+const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
+
+const config = useRuntimeConfig();
+const API_BASE_URL = config.public.apiBase;
+
+// Gunakan ref untuk membuat objek 'page' reaktif
+const page = ref({
+  gallery_main_title: 'Galeri Kami', // Tambahkan properti untuk judul utama galeri jika ada di DB
+  gallery_intro_body: 'Memuat galeri...',
+  images: [] // Inisialisasi sebagai array kosong
+});
+
+// Fungsi untuk mengambil data halaman dari backend
+async function fetchPageData(slug) {
+  try {
+    // URL endpoint API backend Anda harus diawali dengan /api/
+    const response = await fetch(`${API_BASE_URL}/api/pages/${slug}`);
+    if (!response.ok) {
+      const errorText = await response.text(); 
+      throw new Error(`HTTP error! status: ${response.status}: ${errorText || 'Unknown error'}`);
     }
-  },
-  async mounted() { // Ubah mounted menjadi async
-    const config = useRuntimeConfig(); // Ambil runtime config
-    const API_BASE_URL = config.public.apiBase; // Akses properti 'public.apiBase'
-
-    // Panggil API untuk mendapatkan data halaman 'galeri'
-    await this.fetchPageData('galeri', API_BASE_URL);
-    this.updateStats(); 
-    this.intervalId = setInterval(this.updateStats, 30000); 
-  },
-  beforeDestroy() {
-    clearInterval(this.intervalId); 
+    const data = await response.json();
+    
+    page.value = data; 
+    
+    // PENTING: Periksa dan parse 'images' jika datang sebagai string JSON (dari DB JSONB)
+    // Backend Anda mengembalikan 'images' sebagai array langsung.
+    // Tetapi jika ada kemungkinan dikirim sebagai string JSON, tetap amankan dengan JSON.parse.
+    if (typeof page.value.images === 'string' && page.value.images.startsWith('[')) {
+      try {
+        page.value.images = JSON.parse(page.value.images);
+      } catch (parseError) {
+        console.error('Gagal mengurai JSON gambar dari DB:', parseError);
+        page.value.images = []; 
+      }
+    } else if (!Array.isArray(page.value.images)) {
+      // Jika bukan array dan bukan string JSON, default ke array kosong
+      page.value.images = []; 
+    }
+  } catch (error) {
+    console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
+    // Fallback data jika gagal mengambil dari API
+    page.value.gallery_main_title = 'Galeri Tidak Tersedia';
+    page.value.gallery_intro_body = 'Gagal memuat galeri.';
+    page.value.images = []; 
   }
 }
+
+// Panggil fetchPageData saat komponen dimuat
+onMounted(async () => {
+  await fetchPageData('galeri');
+  // Penting: Jangan ada lagi panggilan manual this.updateStats() atau setInterval di sini.
+  // useVisitorStats() sudah mengelola logikanya sendiri secara internal.
+});
 </script>
+
 
 <style scoped> /* Menggunakan scoped agar gaya ini hanya berlaku untuk komponen ini */
 /* Gaya Dasar untuk Bagian Galeri Keseluruhan */

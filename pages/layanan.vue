@@ -3,39 +3,33 @@
     <section class="hero">
       <div class="container">
         <div class="hero-image-wrapper">
-          <!-- Menggunakan page.hero_image_url dari database -->
-          <img :src="page.hero_image_url" :alt="page.title" class="hero-image-fallback" />
+          <img :src="page.hero_image_url" :alt="page.title" class="hero-image-display" />
         </div>
       </div>
     </section>
 
     <section class="container">
       <div class="content card">
-        <!-- Menggunakan page.title dari database -->
         <h2 class="section-title">{{ page.title }}</h2>
         <p>
-          <!-- Menggunakan page.main_intro_body dari database -->
           {{ page.main_intro_body }}
         </p>
       </div>
 
       <div class="service-grid">
         <div class="service-card">
-          <!-- PENTING: src sekarang mengikat ke service_1_image_url dari DB -->
           <img :src="page.service_1_image_url" :alt="page.service_1_title" />
           <h3>{{ page.service_1_title }}</h3>
           <p>{{ page.service_1_body }}</p>
         </div>
 
         <div class="service-card">
-          <!-- PENTING: src sekarang mengikat ke service_2_image_url dari DB -->
           <img :src="page.service_2_image_url" :alt="page.service_2_title" />
           <h3>{{ page.service_2_title }}</h3>
           <p>{{ page.service_2_body }}</p>
         </div>
 
         <div class="service-card">
-          <!-- PENTING: src sekarang mengikat ke service_3_image_url dari DB -->
           <img :src="page.service_3_image_url" :alt="page.service_3_title" />
           <h3>{{ page.service_3_title }}</h3>
           <p>{{ page.service_3_body }}</p>
@@ -45,69 +39,72 @@
   </main>
 </template>
 
-<script>
-import { useRuntimeConfig } from '#app'; 
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRuntimeConfig } from '#app';
+// Impor useVisitorStats.js. Pastikan path ini benar!
+// Berdasarkan diskusi terakhir, sepertinya di '~/components/useVisitorStats.js'
+import { useVisitorStats } from '~/components/useVisitorStats'; 
 
-export default {
-  name: 'LayananPage',
-  data() {
-    return {
-      page: {
-        title: 'Memuat Layanan...',
-        hero_image_url: '', 
-        main_intro_body: 'Memuat konten layanan...',
-        service_1_title: 'Memuat...',
-        service_1_body: 'Memuat...',
-        service_1_image_url: '', 
-        service_2_title: 'Memuat...',
-        service_2_body: 'Memuat...',
-        service_2_image_url: '', 
-        service_3_title: 'Memuat...',
-        service_3_body: 'Memuat...',
-        service_3_image_url: ''  
-      }
-    };
-  },
-  async mounted() { 
-    const config = useRuntimeConfig(); 
-    const API_BASE_URL = config.public.apiBase; 
+// Panggil composable useVisitorStats di sini.
+// Ini akan mengelola seluruh logika visitor counter (fetch, update, onMounted, onUnmounted).
+const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
 
-    await this.fetchPageData('layanan', API_BASE_URL); 
-    this.updateStats(); 
-    this.intervalId = setInterval(this.updateStats, 30000); 
-  },
-  beforeDestroy() {
-    clearInterval(this.intervalId); 
-  },
-  methods: {
-    async fetchPageData(slug, apiBaseUrl) { 
-      try {
-        const response = await fetch(`${apiBaseUrl}/pages/${slug}`);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`HTTP error! status: ${response.status}: ${errorData.message || 'Unknown error'}`);
-        }
-        const data = await response.json();
-        this.page = data; 
-      } catch (error) {
-        console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
-        // Fallback data jika terjadi error (PERBAIKAN SINTAKS DI SINI)
-        this.page.title = 'Layanan Tidak Tersedia';
-        this.page.main_intro_body = 'Terjadi kesalahan saat memuat layanan.';
-        this.page.service_1_title = 'Error'; // PERBAIKAN: Gunakan '='
-        this.page.service_1_body = 'Error'; // PERBAIKAN: Gunakan '='
-        this.page.service_1_image_url = ''; 
-        this.page.service_2_title = 'Error'; // PERBAIKAN: Gunakan '='
-        this.page.service_2_body = 'Error'; // PERBAIKAN: Gunakan '='
-        this.page.service_2_image_url = '';
-        this.page.service_3_title = 'Error'; // PERBAIKAN: Gunakan '='
-        this.page.service_3_body = 'Error'; // PERBAIKAN: Gunakan '='
-        this.page.service_3_image_url = '';
-      }
+const config = useRuntimeConfig();
+const API_BASE_URL = config.public.apiBase;
+
+// Gunakan ref untuk membuat objek 'page' reaktif
+const page = ref({
+  title: 'Memuat Layanan...',
+  hero_image_url: '', 
+  main_intro_body: 'Memuat konten layanan...',
+  service_1_title: 'Memuat...',
+  service_1_body: 'Memuat...',
+  service_1_image_url: '', 
+  service_2_title: 'Memuat...',
+  service_2_body: 'Memuat...',
+  service_2_image_url: '', 
+  service_3_title: 'Memuat...',
+  service_3_body: 'Memuat...',
+  service_3_image_url: '' 
+});
+
+// Fungsi untuk mengambil data halaman dari backend
+async function fetchPageData(slug) {
+  try {
+    // URL endpoint API backend Anda harus diawali dengan /api/
+    const response = await fetch(`${API_BASE_URL}/api/pages/${slug}`);
+    if (!response.ok) {
+      const errorText = await response.text(); 
+      throw new Error(`HTTP error! status: ${response.status}: ${errorText || 'Unknown error'}`);
     }
+    const data = await response.json();
+    page.value = data; // Perbarui ref 'page'
+  } catch (error) {
+    console.error(`Gagal mengambil data halaman '${slug}' dari API:`, error);
+    // Atur pesan dan URL fallback jika terjadi error
+    page.value.title = 'Layanan Tidak Tersedia';
+    page.value.main_intro_body = 'Terjadi kesalahan saat memuat layanan.';
+    page.value.service_1_title = 'Error';
+    page.value.service_1_body = 'Error';
+    page.value.service_1_image_url = ''; 
+    page.value.service_2_title = 'Error';
+    page.value.service_2_body = 'Error';
+    page.value.service_2_image_url = '';
+    page.value.service_3_title = 'Error';
+    page.value.service_3_body = 'Error';
+    page.value.service_3_image_url = '';
   }
 }
+
+// Panggil fetchPageData saat komponen dimuat
+onMounted(async () => {
+  await fetchPageData('layanan');
+  // Penting: Jangan ada lagi panggilan manual this.updateStats() atau setInterval di sini.
+  // useVisitorStats() sudah mengelola logikanya sendiri secara internal.
+});
 </script>
+
 <style>
 /* Tambahan untuk hero-image-fallback agar gambar hero tampil baik */
 .hero-image-fallback {
