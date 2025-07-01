@@ -55,10 +55,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRuntimeConfig } from '#app';
-// --- IMPORTANT CHANGE HERE ---
-// Change import path from '@/components/useVisitorStats' to '@/composables/useVisitorStats'
-import { useVisitorStats } from '@/components/useVisitorStats';
+// Pastikan path ini benar (berdasarkan lokasi file Anda, ~/components/useVisitorStats.js)
+import { useVisitorStats } from '~/components/useVisitorStats'; 
 
+// Panggil composable useVisitorStats sekali di sini
 const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
 
 const route = useRoute();
@@ -80,9 +80,12 @@ const shouldHideButton = computed(() => {
 
 async function fetchContactPageData() {
   try {
-    // Ensure API_BASE_URL is correct and points to your Railway backend
-    const response = await fetch(`${API_BASE_URL}/api/pages/kontak`); // Added /api/ here
-    if (!response.ok) throw new Error('HTTP error ' + response.status);
+    // Pastikan URL API sudah benar (gunakan /api/pages/kontak, bukan /api/api/pages/kontak)
+    const response = await fetch(`${API_BASE_URL}/api/pages/kontak`);
+    if (!response.ok) {
+        const errorText = await response.text(); // Ambil teks error jika ada
+        throw new Error(`HTTP error ${response.status}: ${errorText}`);
+    }
     page.value = await response.json();
   } catch (error) {
     console.error('Gagal mengambil data halaman kontak:', error);
@@ -95,6 +98,8 @@ async function fetchContactPageData() {
 }
 
 onMounted(fetchContactPageData);
+// HAPUS SEMUA PANGGILAN MANUAL this.updateStats() ATAU setInterval DI SINI!
+// useVisitorStats() sudah menanganinya secara otomatis di dalamnya.
 </script>
 
 <style scoped>
