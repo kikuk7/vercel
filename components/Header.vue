@@ -18,7 +18,7 @@
     </div>
 
     <div class="logomobile">
-      <img src="/static/assets/logob.png" alt="Logo" class="logo" />
+      <img src="/static/assets/Logob.png" alt="Logo" class="logo" />
     </div>
 
     <div class="menu">
