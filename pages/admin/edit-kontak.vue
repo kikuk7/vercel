@@ -11,7 +11,6 @@
       </div>
       <div class="card-body">
         <form @submit.prevent="updateContact">
-          <!-- Bidang untuk Judul Halaman dan Slug jika Anda ingin mengeditnya dari sini juga -->
           <div class="mb-3">
             <label for="title" class="form-label">Judul Halaman (Kontak)</label>
             <input type="text" class="form-control" id="title" v-model="page.title">
@@ -70,29 +69,31 @@
             <small class="form-text text-muted">Contoh: +628781319313 (gunakan format internasional).</small>
           </div>
           
-          <!-- Tambahan: Input file untuk upload gambar hero (hero_image_url) -->
           <div class="mb-3">
             <label for="hero_image_source_type" class="form-label">Tipe Sumber Gambar Hero</label>
             <select class="form-control" id="hero_image_source_type" v-model="page.hero_image_source_type">
               <option value="static">File Gambar Lokal/Static</option>
               <option value="external">URL Gambar Eksternal (JPG/PNG)</option>
-              <option value="drive">Google Drive Gambar URL</option>
               <option value="">Tidak Ada Gambar</option>
             </select>
           </div>
           <div class="mb-3">
             <label for="hero_image_url" class="form-label">URL Gambar Hero</label>
             <input type="text" class="form-control" id="hero_image_url" v-model="page.hero_image_url">
-            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (untuk Static), 'https://example.com/image.jpg' (untuk Eksternal), 'https://drive.google.com/file/d/FILE_ID/view' (untuk Google Drive Gambar)</small>
+            <small class="form-text text-muted">Contoh: '/static/assets/hero-image.jpg' (untuk Static), 'https://example.com/image.jpg' (untuk Eksternal)</small>
             
             <input type="file" ref="heroImageInput" @change="handleHeroImageSelect" class="form-control mt-2 mb-2" accept="image/*">
             <button type="button" @click="uploadHeroImage" class="btn btn-info btn-sm">Unggah Gambar Hero Baru</button>
             <span v-if="uploadingHeroImage" class="ms-2 text-muted">Mengunggah...</span>
             <p v-if="heroUploadError" class="text-danger mt-1">{{ heroUploadError }}</p>
             <p v-if="heroUploadSuccessMessage" class="text-success mt-1">{{ heroUploadSuccessMessage }}</p>
+
+             <div v-if="page.hero_image_url" class="hero-image-preview-wrapper mt-3">
+              <img :src="page.hero_image_url" alt="Pratinjau Gambar Hero" class="img-thumbnail hero-image-preview">
+              <button type="button" @click="removeHeroImage" class="btn btn-danger btn-sm hero-image-remove-btn">Hapus Gambar Hero</button>
+            </div>
           </div>
 
-          <!-- Konten Halaman Utama (Body) -->
           <hr>
           <div class="mb-3">
             <label for="body" class="form-label">Konten Halaman (Utama)</label>
@@ -115,31 +116,40 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router'; 
 import { useRuntimeConfig } from '#app'; 
 
+// Define Page Meta
 definePageMeta({
   layout: 'admin',
   middleware: ['auth-admin'],
   title: 'Edit Kontak'
 });
 
-const page = ref({}); // Akan menyimpan data halaman 'kontak' dari DB
+// Reactive State Variables
+const page = ref({}); // Will store 'kontak' page data from DB
 const successMessage = ref(null);
 const errorMessage = ref(null);
 const validationErrors = ref({});
 
-// State untuk upload gambar hero
+// State for hero image upload
 const heroImageInput = ref(null); 
 const uploadingHeroImage = ref(false);
 const heroUploadError = ref(null);
 const heroUploadSuccessMessage = ref(null);
 
+// Get Runtime Config and Router Instance
 const config = useRuntimeConfig(); 
 const API_BASE_URL = config.public.apiBase; 
 const router = useRouter(); 
 
-// Fungsi untuk memuat data halaman 'kontak'
+// Fetch contact page data on component mount
+onMounted(async () => {
+  await fetchContactPageData();
+});
+
+// Function to load 'kontak' page data
 async function fetchContactPageData() {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/kontak`); 
+    // Ensure API_BASE_URL is correct and includes '/api/' prefix
+    const response = await fetch(`${API_BASE_URL}/api/pages/kontak`); 
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Gagal memuat data kontak.');
@@ -152,7 +162,7 @@ async function fetchContactPageData() {
   }
 }
 
-// Fungsi untuk menyimpan perubahan kontak ke database
+// Function to save contact changes to the database
 async function updateContact() {
   successMessage.value = null;
   errorMessage.value = null;
@@ -160,20 +170,25 @@ async function updateContact() {
 
   try {
     const pageDataToSend = { ...page.value };
-    // Pastikan images (dari galeri) dikonversi ke string JSON jika ada
+
+    // Handle `images` property (relevant if the 'pages' table stores a JSONB 'images' array)
+    // Even if this specific page doesn't use it, the backend might expect it.
     if (Array.isArray(pageDataToSend.images)) {
         pageDataToSend.images = JSON.stringify(pageDataToSend.images);
     } else {
         pageDataToSend.images = '[]'; 
     }
     
-    // Perbaikan: Pastikan hero_video_url dan hero_image_url tidak terpengaruh jika NULL
+    // Ensure URLs are null if empty strings to avoid issues with DB types
     if (!pageDataToSend.hero_video_url) pageDataToSend.hero_video_url = null;
     if (!pageDataToSend.hero_image_url) pageDataToSend.hero_image_url = null;
-    if (!pageDataToSend.hero_video_source_type) pageDataToSend.hero_video_source_type = 'mp4'; // Default
-    if (!pageDataToSend.hero_image_source_type) pageDataToSend.hero_image_source_type = 'static'; // Default
+    
+    // Default source types if not set or cleared
+    if (!pageDataToSend.hero_video_source_type) pageDataToSend.hero_video_source_type = 'mp4'; 
+    if (!pageDataToSend.hero_image_source_type) pageDataToSend.hero_image_source_type = 'static'; 
 
-    const response = await fetch(`${API_BASE_URL}/pages/${pageDataToSend.id}`, { 
+    // Ensure API_BASE_URL is correct and includes '/api/' prefix
+    const response = await fetch(`${API_BASE_URL}/api/pages/${pageDataToSend.id}`, { 
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -191,7 +206,7 @@ async function updateContact() {
       }
     } else {
       successMessage.value = 'Informasi Kontak berhasil diperbarui!';
-      await fetchContactPageData(); 
+      await fetchContactPageData(); // Reload data after successful update
       setTimeout(() => successMessage.value = null, 3000); 
     }
   } catch (e) {
@@ -200,7 +215,7 @@ async function updateContact() {
   }
 }
 
-// === Metode Upload Gambar Hero ===
+// === Methods for Hero Image Upload ===
 function handleHeroImageSelect(event) {
   const file = event.target.files[0];
   if (file) {
@@ -210,7 +225,7 @@ function handleHeroImageSelect(event) {
 }
 
 async function uploadHeroImage() {
-  const file = heroImageInput.value.files[0];
+  const file = heroImageInput.value?.files[0]; // Use optional chaining for safety
   if (!file) {
     heroUploadError.value = "Pilih gambar untuk diunggah.";
     return;
@@ -224,7 +239,8 @@ async function uploadHeroImage() {
   formData.append('image', file); 
 
   try {
-    const response = await fetch(`${API_BASE_URL}/upload-image`, { 
+    // Ensure API_BASE_URL is correct and includes '/api/' prefix
+    const response = await fetch(`${API_BASE_URL}/api/upload-image`, { 
       method: 'POST',
       body: formData 
     });
@@ -238,10 +254,12 @@ async function uploadHeroImage() {
     const imageUrl = result.publicUrl; 
 
     if (imageUrl) {
-      page.value.hero_image_url = imageUrl; // Set URL gambar hero langsung
-      page.value.hero_image_source_type = 'external'; // Asumsi gambar diunggah ke eksternal
+      page.value.hero_image_url = imageUrl; // Set hero image URL directly
+      page.value.hero_image_source_type = 'external'; // Assume uploaded image is external
       heroUploadSuccessMessage.value = 'Gambar hero berhasil diunggah! Klik Simpan Perubahan untuk menyimpan.';
-      heroImageInput.value.value = ''; // Reset input file
+      if (heroImageInput.value) {
+        heroImageInput.value.value = ''; // Reset file input
+      }
     } else {
       throw new Error('URL gambar hero tidak diterima dari server.');
     }
@@ -254,7 +272,14 @@ async function uploadHeroImage() {
   }
 }
 
-onMounted(fetchContactPageData); 
+function removeHeroImage() {
+  if (confirm('Apakah Anda yakin ingin menghapus gambar hero? Ini akan menghapus URL dari database.')) {
+    page.value.hero_image_url = null; // Set to null
+    page.value.hero_image_source_type = 'static'; // Revert to default type if removed
+    successMessage.value = 'Gambar hero dihapus. Klik Simpan Perubahan untuk menyimpan ke database.';
+    setTimeout(() => successMessage.value = null, 3000);
+  }
+}
 </script>
 
 <style scoped>
@@ -287,6 +312,56 @@ hr {
     height: 1px;
 }
 
+/* Gaya untuk pratinjau media hero */
+.hero-media-preview-wrapper {
+  max-width: 300px; /* Batasi lebar pratinjau */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 15px;
+  position: relative;
+  background-color: #f0f0f0;
+}
+
+.hero-media-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain; /* Jaga aspek rasio */
+}
+
+.hero-image-preview-wrapper {
+  max-width: 300px; /* Batasi lebar pratinjau gambar hero */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 15px;
+  position: relative;
+  background-color: #f0f0f0;
+  display: flex; /* Untuk menempatkan tombol hapus di atas gambar */
+  justify-content: center;
+  align-items: center;
+  padding: 5px; /* Padding di dalam wrapper */
+}
+
+.hero-image-preview {
+  max-width: 100%;
+  max-height: 200px; /* Batasi tinggi pratinjau gambar */
+  object-fit: contain; /* Jaga aspek rasio */
+  display: block;
+  border-radius: 4px;
+}
+
+.hero-media-remove-btn, .hero-image-remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+  font-size: 0.7em;
+  padding: 5px 8px;
+}
+
+/* Gaya untuk grid thumbnail gambar (Meskipun tidak digunakan langsung di sini, bisa tetap ada) */
 .image-thumbnail-grid {
   display: flex;
   flex-wrap: wrap;
