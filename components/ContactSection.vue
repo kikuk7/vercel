@@ -57,7 +57,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRuntimeConfig } from '#app';
 // --- IMPORTANT CHANGE HERE ---
 // Change import path from '@/components/useVisitorStats' to '@/composables/useVisitorStats'
-import { useVisitorStats } from '~/components/useVisitorStats';
+import { useVisitorStats } from '@/composables/useVisitorStats';
 
 const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
 
