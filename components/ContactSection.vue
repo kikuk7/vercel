@@ -56,20 +56,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRuntimeConfig } from '#app'
-import { createClient } from '@supabase/supabase-js'
 
-// === Konfigurasi Supabase ===
-const config = useRuntimeConfig()
-const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
-
-// === Variabel Statistik ===
 const totalVisitors = ref(0)
 const todayVisitors = ref(0)
 const onlineUsers = ref(0)
 
-// === Route & Data Halaman ===
 const route = useRoute()
-const API_BASE_URL = config.public.apiBase
+const config = useRuntimeConfig()
+const API_BASE_URL = config.public.apiBase || 'https://cvbackend-production-cb7f.up.railway.app/api'
 
 const page = ref({
   contact_email_address: 'Memuat...',
@@ -83,52 +77,28 @@ const shouldHideButton = computed(() => {
   return ['/produk', '/kontak'].includes(route.path)
 })
 
-// === Fungsi Statistik Pengunjung ===
-async function updateVisitorStatsSupabase() {
+async function fetchVisitorStats() {
   try {
-    const now = new Date()
-    const nowISO = now.toISOString()
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString()
-    const todayDate = now.toISOString().split('T')[0]
-
-    const visitorId = sessionStorage.getItem('visitor-id') || crypto.randomUUID()
-    sessionStorage.setItem('visitor-id', visitorId)
-
-    // Catat kunjungan
-    await supabase.from('visitor_stats').insert({
-      id: visitorId,
-      visited_at: nowISO,
-      user_agent: navigator.userAgent
+    const response = await fetch(`${API_BASE_URL}/visitor-stats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_agent: navigator.userAgent
+      })
     })
 
-    // Total visitors
-    const { count: total } = await supabase
-      .from('visitor_stats')
-      .select('id', { count: 'exact', head: true })
+    if (!response.ok) throw new Error('Gagal ambil statistik')
 
-    totalVisitors.value = total || 0
+    const data = await response.json()
 
-    // Hari ini
-    const { count: today } = await supabase
-      .from('visitor_stats')
-      .select('id', { count: 'exact', head: true })
-      .gte('visited_at', `${todayDate}T00:00:00Z`)
-
-    todayVisitors.value = today || 0
-
-    // Online (aktif 5 menit terakhir)
-    const { count: online } = await supabase
-      .from('visitor_stats')
-      .select('id', { count: 'exact', head: true })
-      .gte('visited_at', fiveMinutesAgo)
-
-    onlineUsers.value = online || 0
+    totalVisitors.value = data.total || 0
+    todayVisitors.value = data.today || 0
+    onlineUsers.value = data.online || 0
   } catch (error) {
-    console.error('❌ Gagal memuat statistik pengunjung:', error)
+    console.error('Gagal ambil statistik pengunjung:', error)
   }
 }
 
-// === Data Halaman Kontak ===
 async function fetchContactPageData() {
   try {
     const response = await fetch(`${API_BASE_URL}/pages/kontak`)
@@ -144,11 +114,10 @@ async function fetchContactPageData() {
   }
 }
 
-// === Lifecycle ===
 onMounted(() => {
   fetchContactPageData()
-  updateVisitorStatsSupabase()
-  setInterval(updateVisitorStatsSupabase, 30000)
+  fetchVisitorStats()
+  setInterval(fetchVisitorStats, 30000)
 })
 </script>
 
