@@ -46,7 +46,6 @@
 
 export default {
   name: 'ProdukPage',
-  mixins: [visitorStats], // Use the mixin for visitor stats
   
   data() {
     return {

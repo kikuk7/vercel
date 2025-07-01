@@ -49,7 +49,6 @@ import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
 export default {
   name: 'KontakPage',
-  mixins: [visitorStats], // Use the mixin for visitor stats
   data() {
     return {
       // Inisialisasi properti 'page' dengan nilai default/placeholder
