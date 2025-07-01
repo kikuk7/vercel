@@ -2,7 +2,7 @@
   <header>
     <div class="navbar container">
       <div class="logo-container">
-        <img src="/static/assets/logo.png" alt="Logo" class="logo" />
+        <img src="/static/assets/lgc.png" alt="Logo" class="logo" />
       </div>
 
       <nav class="desktop-nav">
@@ -18,7 +18,7 @@
     </div>
 
     <div class="logomobile">
-      <img src="/static/assets/Logob.png" alt="Logo" class="logo" />
+      <img src="/static/assets/lgc.png" alt="Logo" class="logo" />
     </div>
 
     <div class="menu">
