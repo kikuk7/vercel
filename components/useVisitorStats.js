@@ -1,20 +1,37 @@
 // composables/useVisitorStats.js
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRuntimeConfig } from '#app';
+import { v4 as uuidv4 } from 'uuid'; // Pastikan Anda sudah menginstal uuid (npm install uuid)
 
 export function useVisitorStats() {
     const totalVisitors = ref(0);
     const todayVisitors = ref(0);
     const onlineUsers = ref(0);
-    const visitorStatsId = ref(null);
+    const visitorStatsId = ref(null); // ID baris tunggal dari tabel visitor_stats
+    let sessionId = null; // ID sesi unik untuk pengguna ini
 
     const config = useRuntimeConfig();
     const API_BASE_URL = config.public.apiBase;
 
-    let heartbeatInterval = null; // Untuk menyimpan ID interval heartbeat
+    let heartbeatInterval = null;
 
+    // Inisialisasi atau ambil session ID dari localStorage
+    const getOrCreateSessionId = () => {
+        if (typeof window !== 'undefined') {
+            let id = localStorage.getItem('user_session_id');
+            if (!id) {
+                id = uuidv4();
+                localStorage.setItem('user_session_id', id);
+            }
+            return id;
+        }
+        return null; // Untuk SSR atau jika window tidak tersedia
+    };
+
+    // Fungsi untuk mengambil data statistik utama dari backend
     const fetchVisitorStats = async () => {
         try {
+            // Endpoint ini sekarang akan MENGHITUNG online_users dari tabel sesi
             const response = await fetch(`${API_BASE_URL}/api/visitor-stats`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -24,7 +41,7 @@ export function useVisitorStats() {
             totalVisitors.value = data.totalVisitors || 0;
             todayVisitors.value = data.todayVisitors || 0;
             onlineUsers.value = data.onlineUsers || 0;
-            visitorStatsId.value = data.id;
+            visitorStatsId.value = data.id; // ID dari baris visitor_stats tunggal
         } catch (err) {
             console.error('Error fetching visitor stats from backend:', err.message);
             totalVisitors.value = 0;
@@ -35,53 +52,54 @@ export function useVisitorStats() {
 
     // Fungsi untuk mengirim sinyal heartbeat ke backend
     const sendHeartbeat = async () => {
-        // Coba ambil ID jika belum ada, terutama untuk heartbeat awal
-        if (!visitorStatsId.value) {
+        if (!sessionId) { // Pastikan session ID sudah ada
+            sessionId = getOrCreateSessionId();
+            if (!sessionId) return;
+        }
+        if (!visitorStatsId.value) { // Pastikan visitorStatsId juga sudah ada
             await fetchVisitorStats();
-            if (!visitorStatsId.value) {
-                console.warn('Visitor stats ID not available for heartbeat. Skipping.');
-                return;
-            }
+            if (!visitorStatsId.value) return;
         }
 
+        const dataToSend = {
+            sessionId: sessionId,
+            visitorStatsId: visitorStatsId.value,
+            // Opsional: ip_address dan user_agent bisa dikirim dari sini jika diperlukan
+            // ipAddress: '...get from req in backend...',
+            // userAgent: navigator.userAgent
+        };
+
         try {
-            // Menggunakan sendBeacon untuk keandalan lebih baik saat user akan meninggalkan halaman
             if (navigator.sendBeacon) {
-                const blob = new Blob([JSON.stringify({ visitorStatsId: visitorStatsId.value })], {type : 'application/json'});
+                const blob = new Blob([JSON.stringify(dataToSend)], {type : 'application/json'});
                 navigator.sendBeacon(`${API_BASE_URL}/api/visitor-stats/heartbeat`, blob);
             } else {
-                // Fallback untuk fetch jika sendBeacon tidak tersedia
                 await fetch(`${API_BASE_URL}/api/visitor-stats/heartbeat`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ visitorStatsId: visitorStatsId.value }),
-                    keepalive: true // Penting untuk memastikan request terkirim saat tab ditutup
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSend),
+                    keepalive: true
                 });
             }
-            // console.log('Heartbeat sent.'); // Debugging: aktifkan jika perlu
+            // console.log('Heartbeat sent for session:', sessionId); // Debugging
         } catch (err) {
             console.error('Error sending heartbeat:', err.message);
         }
     };
 
-    // Fungsi updateStats yang lama akan disederhanakan/dihapus karena heartbeat akan menangani onlineUsers
-    // Namun, kita tetap butuh untuk increment total/today saat kunjungan pertama.
+    // Fungsi untuk penambahan total_visitors dan today_visitors pada load awal
     const updateStatsOnInitialLoad = async () => {
         if (!visitorStatsId.value) {
-            await fetchVisitorStats();
-            if (!visitorStatsId.value) {
-                console.error('Could not get visitor stats ID for initial load, update failed.');
-                return;
-            }
+            await fetchVisitorStats(); // Dapatkan visitorStatsId
+            if (!visitorStatsId.value) return;
         }
         try {
-            const response = await fetch(`${API_BASE_URL}/api/visitor-stats/update`, {
+            // Ini hanya untuk menambah total dan today. online_users akan dihitung dari tabel sesi.
+            const response = await fetch(`${API_BASE_URL}/api/visitor-stats/increment-counts`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'increment_all', visitorStatsId: visitorStatsId.value }),
-                keepalive: true // Agar request awal terkirim
+                body: JSON.stringify({ visitorStatsId: visitorStatsId.value }),
+                keepalive: true
             });
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -89,29 +107,29 @@ export function useVisitorStats() {
             const data = await response.json();
             totalVisitors.value = data.totalVisitors;
             todayVisitors.value = data.todayVisitors;
-            onlineUsers.value = data.onlineUsers;
+            // onlineUsers.value akan diperbarui oleh fetchVisitorStats yang memanggil /api/visitor-stats
         } catch (err) {
-            console.error('Error updating visitor stats on initial load:', err.message);
+            console.error('Error updating visitor counts on initial load:', err.message);
         }
     };
 
-
     onMounted(async () => {
-        await fetchVisitorStats(); // Ambil statistik awal & ID
-        await updateStatsOnInitialLoad(); // Increment total/today/online pada kunjungan awal
-
+        sessionId = getOrCreateSessionId(); // Inisialisasi session ID
+        await fetchVisitorStats(); // Ambil statistik awal (termasuk onlineUsers terbaru)
+        await updateStatsOnInitialLoad(); // Tingkatkan total/today visitor
+        
+        // Kirim heartbeat pertama kali
+        sendHeartbeat();
         // Mulai kirim heartbeat setiap 1 menit (sesuaikan interval ini!)
-        // Lebih cepat dari timeout backend, misalnya timeout 3 menit, heartbeat 1 menit.
         heartbeatInterval = setInterval(sendHeartbeat, 60 * 1000); // 1 menit
     });
 
     onUnmounted(() => {
-        // Hapus interval heartbeat saat komponen tidak lagi aktif
         if (heartbeatInterval) {
             clearInterval(heartbeatInterval);
         }
-        // Kirim heartbeat terakhir saat meninggalkan halaman untuk memperbarui timestamp online
-        sendHeartbeat(); // Mengirim signal terakhir
+        // Kirim heartbeat terakhir saat meninggalkan halaman
+        sendHeartbeat();
     });
 
     return {
