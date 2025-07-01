@@ -50,7 +50,6 @@ import { useRuntimeConfig } from '#app';
 
 export default {
   name: 'LayananPage',
-  mixins: [visitorStats], 
   data() {
     return {
       page: {

@@ -22,7 +22,6 @@ import { useRuntimeConfig } from '#app'; // Impor useRuntimeConfig
 
 export default {
   name: 'FaqPage',
-  mixins: [visitorStats], // Use the mixin for visitor stats
   data() {
     return {
       activeIndex: null,

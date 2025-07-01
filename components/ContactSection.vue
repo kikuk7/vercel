@@ -54,16 +54,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRuntimeConfig } from '#app';
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRuntimeConfig } from '#app'
+import { createClient } from '@supabase/supabase-js'
 
+// === Konfigurasi Supabase ===
+const config = useRuntimeConfig()
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
+
+// === Variabel Statistik ===
 const totalVisitors = ref(0)
 const todayVisitors = ref(0)
-const onlineUsers = ref(1) // Default selalu 1 jika tidak multi-user
+const onlineUsers = ref(0)
 
-const route = useRoute();
-const config = useRuntimeConfig();
-const API_BASE_URL = config.public.apiBase;
+// === Route & Data Halaman ===
+const route = useRoute()
+const API_BASE_URL = config.public.apiBase
 
 const page = ref({
   contact_email_address: 'Memuat...',
@@ -71,46 +77,78 @@ const page = ref({
   contact_whatsapp_number: 'Memuat...',
   contact_location_title: 'Memuat...',
   contact_location_body: 'Memuat...'
-});
+})
 
 const shouldHideButton = computed(() => {
-  const currentPath = route.path;
-  return ['/produk', '/kontak'].includes(currentPath);
-});
+  return ['/produk', '/kontak'].includes(route.path)
+})
 
-function updateVisitorStatsLocal() {
-  const todayKey = 'visited-' + new Date().toISOString().slice(0, 10)
-  const totalKey = 'total-visits'
+// === Fungsi Statistik Pengunjung ===
+async function updateVisitorStatsSupabase() {
+  try {
+    const now = new Date()
+    const nowISO = now.toISOString()
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString()
+    const todayDate = now.toISOString().split('T')[0]
 
-  // Cek apakah sudah mengunjungi hari ini
-  if (!localStorage.getItem(todayKey)) {
-    localStorage.setItem(todayKey, 'true')
-    const currentTotal = parseInt(localStorage.getItem(totalKey) || '0')
-    localStorage.setItem(totalKey, currentTotal + 1)
+    const visitorId = sessionStorage.getItem('visitor-id') || crypto.randomUUID()
+    sessionStorage.setItem('visitor-id', visitorId)
+
+    // Catat kunjungan
+    await supabase.from('visitor_stats').insert({
+      id: visitorId,
+      visited_at: nowISO,
+      user_agent: navigator.userAgent
+    })
+
+    // Total visitors
+    const { count: total } = await supabase
+      .from('visitor_stats')
+      .select('id', { count: 'exact', head: true })
+
+    totalVisitors.value = total || 0
+
+    // Hari ini
+    const { count: today } = await supabase
+      .from('visitor_stats')
+      .select('id', { count: 'exact', head: true })
+      .gte('visited_at', `${todayDate}T00:00:00Z`)
+
+    todayVisitors.value = today || 0
+
+    // Online (aktif 5 menit terakhir)
+    const { count: online } = await supabase
+      .from('visitor_stats')
+      .select('id', { count: 'exact', head: true })
+      .gte('visited_at', fiveMinutesAgo)
+
+    onlineUsers.value = online || 0
+  } catch (error) {
+    console.error('❌ Gagal memuat statistik pengunjung:', error)
   }
-
-  totalVisitors.value = parseInt(localStorage.getItem(totalKey) || '1')
-  todayVisitors.value = 1 // Karena hanya client-side
 }
 
+// === Data Halaman Kontak ===
 async function fetchContactPageData() {
   try {
-    const response = await fetch(`${API_BASE_URL}/pages/kontak`);
-    if (!response.ok) throw new Error('HTTP error ' + response.status);
-    page.value = await response.json();
+    const response = await fetch(`${API_BASE_URL}/pages/kontak`)
+    if (!response.ok) throw new Error('HTTP error ' + response.status)
+    page.value = await response.json()
   } catch (error) {
-    console.error('Gagal mengambil data halaman kontak:', error);
-    page.value.contact_email_address = 'Error Memuat';
-    page.value.contact_phone = 'Error Memuat';
-    page.value.contact_whatsapp_number = '';
-    page.value.contact_location_title = 'Error Memuat';
-    page.value.contact_location_body = 'Error Memuat';
+    console.error('Gagal mengambil data halaman kontak:', error)
+    page.value.contact_email_address = 'Error Memuat'
+    page.value.contact_phone = 'Error Memuat'
+    page.value.contact_whatsapp_number = ''
+    page.value.contact_location_title = 'Error Memuat'
+    page.value.contact_location_body = 'Error Memuat'
   }
 }
 
+// === Lifecycle ===
 onMounted(() => {
   fetchContactPageData()
-  updateVisitorStatsLocal()
+  updateVisitorStatsSupabase()
+  setInterval(updateVisitorStatsSupabase, 30000)
 })
 </script>
 
