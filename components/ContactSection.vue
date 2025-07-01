@@ -20,7 +20,8 @@
       <div class="lokasi-info">
         <h3>{{ page.contact_location_title }}</h3>
         <p>{{ page.contact_location_body }}</p>
-        <a :href="`https://wa.me/${page.contact_whatsapp_number}`"
+        <a v-if="page.contact_whatsapp_number && page.contact_whatsapp_number !== 'Error Memuat'"
+           :href="`https://wa.me/${page.contact_whatsapp_number}`"
            :class="['btn-primary', 'contact-section-btn', { 'hidden-on-specific-pages': shouldHideButton }]">
           <img src="/static/assets/icon/WA.png" alt="WA Icon" class="btn-icon-img"> hubungi kami
         </a>
@@ -45,7 +46,7 @@
 
     <div class="map">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18... (pendekkan untuk kejelasan)"
+        src="https://www.google.com/maps/embed?pb=!1m18..."
         width="100%" height="250" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
       </iframe>
     </div>
@@ -55,9 +56,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRuntimeConfig } from '#app';
-import { useVisitorStats } from '@/components/useVisitorStats';
 
-const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
+const totalVisitors = ref(0)
+const todayVisitors = ref(0)
+const onlineUsers = ref(1) // Default selalu 1 jika tidak multi-user
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -76,6 +78,21 @@ const shouldHideButton = computed(() => {
   return ['/produk', '/kontak'].includes(currentPath);
 });
 
+function updateVisitorStatsLocal() {
+  const todayKey = 'visited-' + new Date().toISOString().slice(0, 10)
+  const totalKey = 'total-visits'
+
+  // Cek apakah sudah mengunjungi hari ini
+  if (!localStorage.getItem(todayKey)) {
+    localStorage.setItem(todayKey, 'true')
+    const currentTotal = parseInt(localStorage.getItem(totalKey) || '0')
+    localStorage.setItem(totalKey, currentTotal + 1)
+  }
+
+  totalVisitors.value = parseInt(localStorage.getItem(totalKey) || '1')
+  todayVisitors.value = 1 // Karena hanya client-side
+}
+
 async function fetchContactPageData() {
   try {
     const response = await fetch(`${API_BASE_URL}/pages/kontak`);
@@ -91,7 +108,10 @@ async function fetchContactPageData() {
   }
 }
 
-onMounted(fetchContactPageData);
+onMounted(() => {
+  fetchContactPageData()
+  updateVisitorStatsLocal()
+})
 </script>
 
 <style scoped>
