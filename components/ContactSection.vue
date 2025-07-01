@@ -45,7 +45,7 @@
 
     <div class="map">
       <iframe
-        src="https://www.google.com/maps/place/Sumber+Alam+Grup/@-6.915304,109.1437803,17z/data=!3m1!4b1!4m6!3m5!1s0x2e6fb8fc4e0a830f:0x18d216b7449db15c!8m2!3d-6.915304!4d109.1437803!16s%2Fg%2F11f25l2fmr?entry=ttu&g_ep=EgoyMDI1MDYyNi4wIKXMDSoASAFQAw%3D%3D"
+        src="https://www.google.com/maps/place/Sumber+Alam+Grup/@-6.915304,109.1437803,17z/data=!3m1!4b1!4m6!3m5!1s0x2e6fb8fc4e0a830f:0x18d216b7449db15c!8m2!3d-6.915304!4d109.1437803!16s%2Fg%2F11f25l2fmr?entry=ttu&g_ep=EgoyMDI1MDYyOS4wIKXMDSoASAFQAw%3D%3D"
         width="100%" height="250" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
       </iframe>
     </div>
