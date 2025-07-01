@@ -30,15 +30,15 @@
         <h3>Pengunjung</h3>
         <p class="visitor-item">
           <img src="/static/assets/icon/person.png" alt="Online" class="visitor-icon">
-          Pengguna Online: <span>2</span>
+          Pengguna Online: <span>{{ onlineUsers }}</span>
         </p>
         <p class="visitor-item">
           <img src="/static/assets/icon/person.png" alt="Today" class="visitor-icon">
-          Pengunjung Hari Ini: <span>5</span>
+          Pengunjung Hari Ini: <span>{{ todayVisitors }}</span>
         </p>
         <p class="visitor-item">
           <img src="/static/assets/icon/person.png" alt="Total" class="visitor-icon">
-          Total Pengunjung: <span>34</span>
+          Total Pengunjung: <span>{{ totalVisitors }}</span>
         </p>
       </div>
     </div>
