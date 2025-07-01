@@ -55,8 +55,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRuntimeConfig } from '#app';
-// --- IMPORTANT CHANGE HERE ---
-// Change import path from '@/components/useVisitorStats' to '@/composables/useVisitorStats'
 import { useVisitorStats } from '@/components/useVisitorStats';
 
 const { totalVisitors, todayVisitors, onlineUsers } = useVisitorStats();
@@ -80,8 +78,7 @@ const shouldHideButton = computed(() => {
 
 async function fetchContactPageData() {
   try {
-    // Ensure API_BASE_URL is correct and points to your Railway backend
-    const response = await fetch(`${API_BASE_URL}/api/pages/kontak`); // Added /api/ here
+    const response = await fetch(`${API_BASE_URL}/pages/kontak`);
     if (!response.ok) throw new Error('HTTP error ' + response.status);
     page.value = await response.json();
   } catch (error) {
