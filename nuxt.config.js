@@ -16,8 +16,7 @@ export default defineNuxtConfig({
         { name: 'format-detection', content: 'telephone=no' }
       ],
       link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/static/assets/1.png' }, // Assuming your logo is in static/assets
-        { rel: 'icon', type: 'image/x-icon', href: '/assets/1.png' }
+        { rel: 'icon', type: 'image/png', href: '/assets/1.png' }
       ],
       script: [ // Script untuk model-viewer
         {
