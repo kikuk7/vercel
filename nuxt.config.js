@@ -57,6 +57,13 @@ export default defineNuxtConfig({
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    '@nuxtjs/sitemap', // Untuk sitemap
+    {
+        siteUrl: 'https://www.cvsumberalamraya.com',
+        exclude: [
+          '/admin/**', // Ini akan mengecualikan semua halaman di dalam folder admin
+        ],
+      }
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -64,7 +71,7 @@ export default defineNuxtConfig({
   },
 
   // Server-side rendering (SSR): https://go.nuxtjs.dev/ssr-mode
-  ssr: false, // Set to true if you want SSR
+  ssr: true, // Set to true if you want SSR
 
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static', // For static site generation (like your current setup)
