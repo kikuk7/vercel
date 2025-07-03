@@ -13,12 +13,17 @@ export default defineNuxtConfig({
     }
   },
 
-  sitemap: {
-    siteUrl: 'https://www.cvsumberalamraya.com',
-    exclude: [
-      '/admin/**', // Ini akan mengecualikan semua halaman di dalam folder admin
-    ],
-  },
+  modules: [
+    [
+      '@nuxtjs/sitemap',
+      {
+        siteUrl: 'https://www.cvsumberalamraya.com',
+        exclude: [
+          '/admin/**', // Ini akan mengecualikan semua halaman di dalam folder admin
+        ],
+      }
+    ]
+  ],
 
   runtimeConfig: {
     public: {
