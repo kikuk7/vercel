@@ -13,6 +13,13 @@ export default defineNuxtConfig({
     }
   },
 
+  sitemap: {
+    siteUrl: 'https://www.cvsumberalamraya.com',
+    exclude: [
+      '/admin/**', // Ini akan mengecualikan semua halaman di dalam folder admin
+    ],
+  },
+
   runtimeConfig: {
     public: {
       // Pastikan ini menunjuk ke BASE URL backend Railway Anda (TANPA /api di akhir)
