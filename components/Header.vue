@@ -1,5 +1,8 @@
 <template>
   <header>
+
+    <link rel="icon" href="<%= BASE_URL %>/static/assets/1.png" type="image/png">
+
     <div class="navbar container">
       <div class="logo-container">
         <img src="/static/assets/lgc.png" alt="Logo" class="logo" />
