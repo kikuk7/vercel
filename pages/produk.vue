@@ -74,6 +74,20 @@ export default {
           ],
         },
         {
+          title: "AKSESORI KNALPOT MOTOR<br>End Muffler Knalpot Variasi",
+          model: "/assets/Product/KomponenKnalpotkykmangkok.glb",
+          description: "Tingkatkan tampilan dan performa kendaraan Anda dengan End Muffler Knalpot Variasi berkualitas tinggi.",
+          specs: [
+            "Bahan: Plat Galvanis",
+            "Tebal Bahan: 1 mm",
+            "Diameter Luar: ±6 cm",
+            "Diameter Lubang Dalam: ±3,5 cm",
+            "Panjang (Depth): ±6 cm",
+            "Warna: Abu-abu metalik",
+            "Harga: Rp10.000 / pcs"
+          ],
+        },
+        {
           title: "ORNAMEN PAGAR BESI<br>Matahari",
           model: "/assets/Product/kb.glb",
           description: "Ornamen logam berbentuk matahari dengan desain gelombang elegan, cocok digunakan sebagai hiasan pada pagar, pintu gerbang, atau dekorasi eksterior lainnya.",
@@ -106,20 +120,7 @@ export default {
             "Harga Satuan: Rp1.100,-"
           ],
         },
-        {
-          title: "AKSESORI KNALPOT MOTOR<br>End Muffler Knalpot Variasi",
-          model: "/assets/Product/KomponenKnalpotkykmangkok.glb",
-          description: "Tingkatkan tampilan dan performa kendaraan Anda dengan End Muffler Knalpot Variasi berkualitas tinggi.",
-          specs: [
-            "Bahan: Plat Galvanis",
-            "Tebal Bahan: 1 mm",
-            "Diameter Luar: ±6 cm",
-            "Diameter Lubang Dalam: ±3,5 cm",
-            "Panjang (Depth): ±6 cm",
-            "Warna: Abu-abu metalik",
-            "Harga: Rp10.000 / pcs"
-          ],
-        },
+        
         {
           title: "ORNAMEN PAGAR BESI<br>Nako Letter S",
           model: "/assets/Product/KomponenPagarS.glb",
