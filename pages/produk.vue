@@ -2,7 +2,7 @@
   <main>
     <section class="product-section container">
       <div class="product-content">
-        <h2 id="product-title">{{ currentProduct.title }}</h2>
+        <h2 id="product-title" v-html="currentProduct.title"></h2>
 
         <div class="product-model">
           <button class="arrow-btn left" @click="prevProduct">‹</button>
@@ -52,7 +52,7 @@ export default {
       products: [
         
       {
-          title: "Adaptor Knalpot Motor",
+          title: "AKSESORI KNALPOT MOTOR<br>Adaptor Knalpot Motor",
           model: "/assets/Product/KomponenKnalpot3Lobang.glb",
           description: "Aksesoris pendukung knalpot motor, berfungsi sebagai sambungan atau penghubung antara bagian knalpot dengan komponen lainnya.",
           specs: [
@@ -63,7 +63,7 @@ export default {
           ],
         },
         {
-          title: "Plendes Mii",
+          title: "AKSESORI KNALPOT MOTOR<br>Plendes Mii",
           model: "/assets/Product/ppp.glb",
           description: "Komponen perlengkapan knalpot motor, berfungsi sebagai sambungan atau dudukan knalpot agar terpasang dengan presisi.",
           specs: [
@@ -74,7 +74,7 @@ export default {
           ],
         },
         {
-          title: "Matahari",
+          title: "ORNAMEN PAGAR BESI<br>Matahari",
           model: "/assets/Product/kb.glb",
           description: "Ornamen logam berbentuk matahari dengan desain gelombang elegan, cocok digunakan sebagai hiasan pada pagar, pintu gerbang, atau dekorasi eksterior lainnya.",
           specs: [
@@ -85,7 +85,7 @@ export default {
           ],
         },
         {
-          title: "Ring Bintang 8",
+          title: "ORNAMEN PAGAR BESI<br>Ring Bintang 8",
           model: "/assets/Product/bintang.glb",
           description: "Ornamen untuk pagar, teralis, atau dekorasi lainnya.",
           specs: [
@@ -96,7 +96,7 @@ export default {
           ],
         },
         {
-          title: "Tombak Keraton",
+          title: "ORNAMEN PAGAR BESI<br>Tombak Keraton",
           model: "/assets/Product/UjungPagar.glb",
           description: "Ornamen dekoratif berbentuk tombak untuk ujung pagar, memberikan tampilan yang elegan dan klasik. Cocok untuk memperindah desain pagar besi.",
           specs: [
@@ -107,7 +107,7 @@ export default {
           ],
         },
         {
-          title: "End Muffler Knalpot Variasi",
+          title: "AKSESORI KNALPOT MOTOR<br>End Muffler Knalpot Variasi",
           model: "/assets/Product/KomponenKnalpotkykmangkok.glb",
           description: "Tingkatkan tampilan dan performa kendaraan Anda dengan End Muffler Knalpot Variasi berkualitas tinggi.",
           specs: [
@@ -121,7 +121,7 @@ export default {
           ],
         },
         {
-          title: "Nako Letter S",
+          title: "ORNAMEN PAGAR BESI<br>Nako Letter S",
           model: "/assets/Product/KomponenPagarS.glb",
           description: "Teralis Nako S adalah ornamen besi berbentuk spiral elegan yang digunakan untuk memperindah pagar, jendela, maupun pintu teralis.",
           specs: [
@@ -133,7 +133,7 @@ export default {
           ],
         },
         {
-          title: "Nako Letter C",
+          title: "ORNAMEN PAGAR BESI<br>Nako Letter C",
           model: "/assets/Product/kuda.glb",
           description: "Nako Letter C adalah ornamen besi berbentuk lengkungan menyerupai huruf C yang digunakan sebagai elemen dekoratif dan struktural pada pagar, jendela, maupun pintu teralis.",
           specs: [
@@ -145,7 +145,7 @@ export default {
           ],
         },
         {
-          title: "Tangki Oli Dump Truck",
+          title: "TANGKI OLI HIDROLIK TRUK<br>Tangki Oli Dump Truck",
           model: "/assets/Product/TangkiKotak.glb",
           description: "Tangki Oli Dump Truck ini dirancang khusus sebagai wadah oli hidrolik untuk kendaraan dump truck. ",
           specs: [
@@ -160,7 +160,7 @@ export default {
           ],
         },
         {
-          title: "Tangki Oli Bulat Dump Truck",
+          title: "TANGKI OLI HIDROLIK TRUK<br>Tangki Oli Bulat Dump Truck",
           model: "/assets/Product/TangkiBulat.glb",
           description: "Tangki Oli Bulat Dump Truck ini dirancang untuk menampung oli hidrolik pada kendaraan dump truck dalam skala kecil hingga menengah. ",
           specs: [
