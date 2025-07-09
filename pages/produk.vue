@@ -15,7 +15,7 @@
             camera-controls
             ar
             @error="console.log('Gagal memuat model')"
-            style="width: 100%; height: 550px; background-color: #eee; border-radius: 12px;">
+            style="width: 100%; height: 550px; border-radius: 12px;">
           </model-viewer>
 
           <button class="arrow-btn right" @click="nextProduct">›</button>
