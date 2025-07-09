@@ -45,7 +45,7 @@
 model-viewer {
     width: 100%;
     height: 450px; /* Tinggi model yang responsif */
-    background-color: #eee;
+    background-color: #ffffff;
     border-radius: 12px; /* Sudut melengkung pada model-viewer */
     display: block;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Tambahkan bayangan jika diinginkan */
