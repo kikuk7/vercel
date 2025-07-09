@@ -52,7 +52,7 @@ export default {
       products: [
         
       {
-          title: "Ornamen motor & kenalpot<br>Adaptor Knalpot Motor",
+          title: "Adaptor Knalpot Motor",
           model: "/assets/Product/KomponenKnalpot3Lobang.glb",
           description: "Aksesoris pendukung knalpot motor, berfungsi sebagai sambungan atau penghubung antara bagian knalpot dengan komponen lainnya.",
           specs: [
