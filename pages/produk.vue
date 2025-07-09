@@ -194,14 +194,8 @@ export default {
     }
   },
 
-  updateStats() {
-    console.log('Fungsi updateStats dipanggil. Tambahkan logikamu di sini.');
-    // Contoh: panggil API untuk statistik
-  },
-  mounted() {
-    this.updateStats(); // Call updateStats when the component is mounted
-    this.intervalId = setInterval(this.updateStats, 30000); // Set up interval
-  },
+  
+  
   beforeDestroy() {
     clearInterval(this.intervalId); // Clear interval when component is destroyed
   }
