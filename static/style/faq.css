@@ -70,3 +70,7 @@ main {
     margin-top: -70px;
   }
 }
+
+span.toggle-icon {
+    display: none;
+}
